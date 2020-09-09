@@ -1,8 +1,5 @@
-import { EntityRepository, Repository } from 'typeorm';
+import { EntityRepository, TreeRepository } from 'typeorm';
 import { Category } from '../../entity/category.entity';
-import { HttpException, HttpStatus } from '@nestjs/common';
 
 @EntityRepository(Category)
-export class CategoryRepository extends Repository<Category> {
-    
-}
+export class CategoryRepository extends TreeRepository<Category> {}
