@@ -20,3 +20,9 @@ export function getSlug(slug: string) {
     now
   );
 }
+export function slugToName(slug: string) {
+  var re = /-/gi;
+  var result = slug.replace(re, " ");
+  
+  return result;
+}

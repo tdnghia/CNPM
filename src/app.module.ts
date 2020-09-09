@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersModule } from './App/users/users.module';
+import { CategoriesModule } from 'src/App/categories/categories.module';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './App/auth/auth.module';
 import { AccessControlModule } from 'nest-access-control';
@@ -19,6 +20,7 @@ import { TransformInterceptor } from './interceptors/TransformInterceptor';
     AccessControlModule.forRoles(roles),
     ConfigModule.forRoot(),
     UsersModule,
+    CategoriesModule,
     AuthModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
