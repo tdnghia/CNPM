@@ -205,7 +205,7 @@ export class UserController extends BaseController<User> {
           deletedAt: Not(IsNull()),
         },
         relations: ['role'],
-        select: ['id', 'email', 'gender', 'createdAt', 'role'],
+        select: ['id', 'email', 'createdAt', 'role'],
       });
       return data;
     } catch (error) {

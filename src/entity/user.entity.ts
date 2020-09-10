@@ -31,8 +31,6 @@ import { Role } from '../entity/role.entity';
 import { Notification } from './notification.entity';
 import { Address } from './address.entity';
 import { Profile } from './profile.entity';
-import { enumToArray } from '../core/utils/helper';
-import { Gender } from '../common/enums/gender.enum';
 import { Tag } from './tag.entity';
 import { Category } from './category.entity';
 import { EducationsEntity } from './education.entity';
@@ -79,13 +77,6 @@ export class User extends Base {
   @MaxLength(255, { always: true, message: 'Max length is 255' })
   @Column({ type: 'varchar', length: 255 })
   password: string;
-
-  @ApiProperty({ example: 'MALE' })
-  @IsOptional({ groups: [UPDATE] })
-  @IsNotEmpty({ groups: [CREATE] })
-  @IsIn(enumToArray(Gender))
-  @Column({ type: 'enum', enum: Gender })
-  gender: string;
 
   @IsOptional({ groups: [UPDATE, CREATE] })
   @Column({ type: 'date', nullable: true })

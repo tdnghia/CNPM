@@ -20,7 +20,6 @@ define(User, (faker: typeof Faker, context: { roles: string[] }) => {
   user.name = `${firstName} ${lastName}`;
   user.email = email;
   user.password = 'admin';
-  user.gender = enumToArray(Gender)[Math.floor(Math.random() * 1)];
   user.phone = phone;
   // user.profile. = avatar;
   profile.profileUrl = avatar;
