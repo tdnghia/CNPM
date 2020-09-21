@@ -1,8 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
 import { Base } from './base.entity';
 import { CrudValidationGroups } from '@nestjsx/crud';
 import { IsNotEmpty, IsOptional } from 'class-validator';
 import { User } from './user.entity';
+import { Jobs } from './job.entity';
 const { CREATE, UPDATE } = CrudValidationGroups;
 @Entity('tags')
 export class Tag extends Base {
@@ -22,4 +30,20 @@ export class Tag extends Base {
     user => user.tags,
   )
   author: User;
+
+  @ManyToMany(
+    type => Jobs,
+    job => job.tags,
+  )
+  @JoinTable({
+    joinColumn: {
+      name: 'tagId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'jobId',
+      referencedColumnName: 'id',
+    },
+  })
+  jobs: Jobs[];
 }

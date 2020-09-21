@@ -1,10 +1,18 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, OneToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToMany,
+  OneToOne,
+  OneToMany,
+} from 'typeorm';
 import { Base } from './base.entity';
 import { CrudValidationGroups } from '@nestjsx/crud';
 const { CREATE, UPDATE } = CrudValidationGroups;
 import { IsOptional, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { Jobs } from './job.entity';
 @Entity('addresses')
 export class Address extends Base {
   @PrimaryGeneratedColumn('uuid')
@@ -45,12 +53,22 @@ export class Address extends Base {
   @Column({ type: 'text' })
   field: string;
 
-  /** Relation
-   * Address to User
+  /**
+   * The relationship between Address and User
    */
   @OneToOne(
     type => User,
     user => user.address,
   )
   user: User;
+
+  /**
+   * The relationship between Address and Job
+   */
+  @OneToMany(
+    type => Jobs,
+    job => job.address,
+    { cascade: true },
+  )
+  jobs: Jobs;
 }
