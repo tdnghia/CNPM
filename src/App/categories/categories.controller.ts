@@ -43,10 +43,19 @@ export class CategoriesController extends BaseController<Category> {
     @Override('createOneBase')
     async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Category) {
         try {
-            dto.slug = getSlug(dto.name);
-            // console.log(dto);
-            const data = await this.base.createOneBase(req, dto);
-            return data;
+            const category = await this.repository.findOne({ where: { name: dto.name } });
+            if (!category) {
+                dto.slug = getSlug(dto.name);
+                const data = await this.base.createOneBase(req, dto);
+                return data;
+            }
+            throw new HttpException(
+                {
+                  message: 'Category name already exists',
+                  status: HttpStatus.CONFLICT,
+                },
+                HttpStatus.CONFLICT,
+            );
         } catch (error) {
             console.log('err', error);
             throw new HttpException(
@@ -88,9 +97,17 @@ export class CategoriesController extends BaseController<Category> {
                     HttpStatus.NOT_FOUND,
                 );
             }
-            if (dto.name) {
-                dto.slug = getSlug(dto.name);
+            const category = await this.repository.findOne({ name: dto.name });
+            if (category) {
+                throw new HttpException(
+                    {
+                        message: 'Category name already exists',
+                        status: HttpStatus.CONFLICT,
+                    },
+                    HttpStatus.CONFLICT,
+                );
             }
+            dto.slug = getSlug(dto.name);
             return await this.repository.update({ slug }, dto);
         } catch (error) {
             throw new HttpException(
