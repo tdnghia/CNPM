@@ -10,11 +10,8 @@ export default class CreateRoles implements Seeder {
       .into(User)
       .values([
         {
-          email: 'ngotruongquoc0102@gmail.com',
-          name: 'Truong Quoc',
+          email: 'admin@gmail.com',
           password: await bcrypt.hash('admin', 12),
-          gender: 'MALE',
-          phone: '0764483638',
           roleId: 1,
         },
       ])

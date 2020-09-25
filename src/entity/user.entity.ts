@@ -31,11 +31,10 @@ import { Role } from '../entity/role.entity';
 import { Notification } from './notification.entity';
 import { Address } from './address.entity';
 import { Profile } from './profile.entity';
-import { enumToArray } from '../core/utils/helper';
-import { Gender } from '../common/enums/gender.enum';
 import { Tag } from './tag.entity';
 import { Category } from './category.entity';
 import { EducationsEntity } from './education.entity';
+import { Jobs } from './job.entity';
 const { CREATE, UPDATE } = CrudValidationGroups;
 
 @Entity('users')
@@ -53,21 +52,9 @@ export class User extends Base {
     type: 'varchar',
     length: 255,
     nullable: false,
-    unique: true,
     readonly: true,
   })
   email: string;
-
-  @IsString({ always: true })
-  @MaxLength(255, { always: true })
-  @Column({ type: 'varchar', length: 255 })
-  name: string;
-
-  @IsOptional({ groups: [UPDATE, CREATE] })
-  @IsString({ always: true })
-  @MaxLength(255, { always: true })
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  introduction: string;
 
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
@@ -79,22 +66,6 @@ export class User extends Base {
   @MaxLength(255, { always: true, message: 'Max length is 255' })
   @Column({ type: 'varchar', length: 255 })
   password: string;
-
-  @ApiProperty({ example: 'MALE' })
-  @IsOptional({ groups: [UPDATE] })
-  @IsNotEmpty({ groups: [CREATE] })
-  @IsIn(enumToArray(Gender))
-  @Column({ type: 'enum', enum: Gender })
-  gender: string;
-
-  @IsOptional({ groups: [UPDATE, CREATE] })
-  @Column({ type: 'date', nullable: true })
-  birthday: Date;
-
-  @IsOptional({ groups: [UPDATE, CREATE] })
-  @IsPhoneNumber('VN US')
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  phone: string;
 
   @ApiProperty({ example: '3 | 4' })
   @IsIn([2, 3, 4])
@@ -143,10 +114,20 @@ export class User extends Base {
   /**
    * The relation between User and adress
    */
-  @OneToOne(
+  @ManyToMany(
     type => Address,
     address => address.user,
   )
+  @JoinTable({
+    joinColumn: {
+      name: 'userId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'addressId',
+      referencedColumnName: 'id',
+    },
+  })
   address: Address;
 
   /**
@@ -176,6 +157,17 @@ export class User extends Base {
     { cascade: true },
   )
   educations: EducationsEntity[];
+
+  /**
+   * The relationship between User and JOb
+   */
+  @OneToMany(
+    type => Jobs,
+    job => job.user,
+    { cascade: true },
+  )
+  jobs: Jobs[];
+
   /**
    * Exec Hash Function before Insert
    */

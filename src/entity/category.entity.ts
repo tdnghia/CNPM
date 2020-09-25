@@ -16,6 +16,7 @@ import { IsNotEmpty, IsOptional } from 'class-validator';
 import { CrudValidationGroups } from '@nestjsx/crud';
 import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { Jobs } from './job.entity';
 
 const { CREATE, UPDATE } = CrudValidationGroups;
 @Entity('categories')
@@ -51,4 +52,14 @@ export class Category extends TreeBase {
     user => user.categories,
   )
   user: User;
+
+  /**
+   * The relationship between Job and Category
+   */
+  @OneToMany(
+    type => Jobs,
+    job => job.category,
+    { cascade: true },
+  )
+  jobs: Jobs[];
 }

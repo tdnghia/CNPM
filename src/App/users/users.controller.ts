@@ -1,13 +1,10 @@
 import {
   Controller,
-  Response,
   HttpStatus,
   HttpException,
   Param,
-  HttpCode,
   InternalServerErrorException,
   Get,
-  UseGuards,
   Put,
   Body,
 } from '@nestjs/common';
@@ -89,7 +86,7 @@ export class UserController extends BaseController<User> {
   @Override('getManyBase')
   @Methods(methodEnum.READ)
   async getAll(@ParsedRequest() req: CrudRequest) {
-    req.parsed.search.$and = [{ isActive: { $eq: true } }];
+    // req.parsed.search.$and = [{ isActive: { $eq: true } }];
     return await this.base.getManyBase(req);
   }
 
@@ -205,7 +202,7 @@ export class UserController extends BaseController<User> {
           deletedAt: Not(IsNull()),
         },
         relations: ['role'],
-        select: ['id', 'email', 'gender', 'createdAt', 'role'],
+        select: ['id', 'email', 'createdAt', 'role'],
       });
       return data;
     } catch (error) {
