@@ -15,7 +15,7 @@ export class LoginDTO {
     type: String,
     description: 'username or email',
     required: true,
-    example: 'ngotruongquoc0102@gmail.com',
+    example: 'admin@gmail.com',
   })
   @IsNotEmpty({ groups: [CREATE] })
   email: string;

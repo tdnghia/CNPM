@@ -3,8 +3,7 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToMany,
-  OneToOne,
-  OneToMany,
+  JoinTable,
 } from 'typeorm';
 import { Base } from './base.entity';
 import { CrudValidationGroups } from '@nestjsx/crud';
@@ -25,20 +24,6 @@ export class Address extends Base {
   @Column({ type: 'text' })
   city: string;
 
-  @ApiProperty({ example: 'Hải Châu' })
-  @IsOptional({ groups: [UPDATE] })
-  @IsNotEmpty({ groups: [CREATE] })
-  @IsString({ always: true })
-  @Column({ type: 'text' })
-  district: string;
-
-  @ApiProperty({ example: '123 Nguyễn Văn Linh' })
-  @IsOptional({ groups: [UPDATE] })
-  @IsNotEmpty({ groups: [CREATE] })
-  @IsString({ always: true })
-  @Column({ type: 'text' })
-  street: string;
-
   @ApiProperty({ example: ' ' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
@@ -46,26 +31,37 @@ export class Address extends Base {
   @Column({ type: 'text' })
   description: string;
 
-  @ApiProperty({ example: ' ' })
-  @IsOptional({ groups: [UPDATE] })
-  @IsNotEmpty({ groups: [CREATE] })
-  @IsString({ always: true })
-  @Column({ type: 'text' })
-  field: string;
+  @IsOptional({ groups: [UPDATE, CREATE] })
+  @Column({ type: 'decimal', nullable: true })
+  latitude: number;
+
+  @IsOptional({ groups: [UPDATE, CREATE] })
+  @Column({ type: 'decimal', nullable: true })
+  longitude: number;
 
   /**
    * The relationship between Address and User
    */
-  @OneToOne(
+  @ManyToMany(
     type => User,
     user => user.address,
   )
+  @JoinTable({
+    joinColumn: {
+      name: 'addressId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'userId',
+      referencedColumnName: 'id',
+    },
+  })
   user: User;
 
   /**
    * The relationship between Address and Job
    */
-  @OneToMany(
+  @ManyToMany(
     type => Jobs,
     job => job.address,
     { cascade: true },

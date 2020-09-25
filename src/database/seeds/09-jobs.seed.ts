@@ -8,14 +8,13 @@ import { Job } from '../../common/enums/jobTypes.enum';
 import { enumToArray } from '../../core/utils/helper';
 import { Tag } from '../../entity/tag.entity';
 import { Jobs } from '../../entity/job.entity';
-import { jobs } from 'googleapis/build/src/apis/jobs';
+import * as _ from 'lodash';
 
 export default class JobsSeeder implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
     const authorRepository = connection.getRepository(User);
     const cateRepository = connection.getRepository(Category);
     const tagsRepository = connection.getRepository(Tag);
-    const jobRepository = connection.getRepository(Jobs);
     const lowestSalary = [
       300,
       350,
@@ -76,7 +75,10 @@ export default class JobsSeeder implements Seeder {
       //New tag to push into Jobs
       const NewTags = [];
       for (let index = 0; index < numberOfTag; index++) {
-        NewTags.push(tags[Math.floor(Math.random() * tags.length)].id);
+        const tagId = tags[Math.floor(Math.random() * tags.length)].id;
+        if (_.indexOf(NewTags, tagId) < 0) {
+          NewTags.push(tagId);
+        }
       }
       const newJob = await factory(Jobs)({
         payload: {
@@ -99,6 +101,7 @@ export default class JobsSeeder implements Seeder {
       }).create();
 
       const manager = await getManager();
+
       for (let index = 0; index < NewTags.length; index++) {
         await manager.query(
           `INSERT INTO jobs_tags_tags values ('${newJob.id}', '${NewTags[index]}')`,
