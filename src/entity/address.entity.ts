@@ -11,7 +11,7 @@ const { CREATE, UPDATE } = CrudValidationGroups;
 import { IsOptional, IsNotEmpty, IsString, MaxLength } from 'class-validator';
 import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Jobs } from './job.entity';
+import { Job } from './job.entity';
 @Entity('addresses')
 export class Address extends Base {
   @PrimaryGeneratedColumn('uuid')
@@ -62,9 +62,9 @@ export class Address extends Base {
    * The relationship between Address and Job
    */
   @ManyToMany(
-    type => Jobs,
+    type => Job,
     job => job.address,
     { cascade: true },
   )
-  jobs: Jobs;
+  jobs: Job;
 }

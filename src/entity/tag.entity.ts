@@ -10,7 +10,7 @@ import { Base } from './base.entity';
 import { CrudValidationGroups } from '@nestjsx/crud';
 import { IsNotEmpty, IsOptional } from 'class-validator';
 import { User } from './user.entity';
-import { Jobs } from './job.entity';
+import { Job } from './job.entity';
 const { CREATE, UPDATE } = CrudValidationGroups;
 @Entity('tags')
 export class Tag extends Base {
@@ -32,7 +32,7 @@ export class Tag extends Base {
   author: User;
 
   @ManyToMany(
-    type => Jobs,
+    type => Job,
     job => job.tags,
   )
   @JoinTable({
@@ -45,5 +45,5 @@ export class Tag extends Base {
       referencedColumnName: 'id',
     },
   })
-  jobs: Jobs[];
+  jobs: Job[];
 }

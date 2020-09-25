@@ -34,7 +34,7 @@ import { Profile } from './profile.entity';
 import { Tag } from './tag.entity';
 import { Category } from './category.entity';
 import { EducationsEntity } from './education.entity';
-import { Jobs } from './job.entity';
+import { Job } from './job.entity';
 const { CREATE, UPDATE } = CrudValidationGroups;
 
 @Entity('users')
@@ -162,11 +162,11 @@ export class User extends Base {
    * The relationship between User and JOb
    */
   @OneToMany(
-    type => Jobs,
+    type => Job,
     job => job.user,
     { cascade: true },
   )
-  jobs: Jobs[];
+  jobs: Job[];
 
   /**
    * Exec Hash Function before Insert

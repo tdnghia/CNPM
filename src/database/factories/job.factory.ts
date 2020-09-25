@@ -1,15 +1,15 @@
 import { define, factory } from 'typeorm-seeding';
 import * as Faker from 'faker';
-import { Jobs } from '../../entity/job.entity';
+import { Job } from '../../entity/job.entity';
 import { getSlug } from '../../core/utils/helper';
 import { getManager } from 'typeorm';
 import { Tag } from '../../entity/tag.entity';
 
-define(Jobs, (faker: typeof Faker, context: { payload?: Jobs }) => {
+define(Job, (faker: typeof Faker, context: { payload?: Job }) => {
   const { payload } = context;
   const name = payload.name;
   const slug = getSlug(name);
-  const job = new Jobs();
+  const job = new Job();
   const manager = getManager();
   job.name = name;
   job.slug = slug;
