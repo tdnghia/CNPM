@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
 
 @Module({})
-export class JobsModule {}
+export class JobsModule {
+  constructor(public service) {}
+}
