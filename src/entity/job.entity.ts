@@ -21,7 +21,7 @@ import {
 } from 'class-validator';
 import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
-import { Job } from '../common/enums/jobTypes.enum';
+import { JobType } from '../common/enums/jobTypes.enum';
 import { Experience } from '../common/enums/experience.enum';
 import { enumToArray } from '../core/utils/helper';
 import { Tag } from './tag.entity';
@@ -30,7 +30,7 @@ import { Address } from './address.entity';
 
 const { CREATE, UPDATE } = CrudValidationGroups;
 @Entity('jobs')
-export class Jobs extends Base {
+export class Job extends Base {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -64,8 +64,8 @@ export class Jobs extends Base {
   description: string;
 
   @IsOptional({ groups: [UPDATE, CREATE] })
-  @IsIn(enumToArray(Job))
-  @Column({ type: 'enum', enum: Job, nullable: true })
+  @IsIn(enumToArray(JobType))
+  @Column({ type: 'enum', enum: JobType, nullable: true })
   type: string;
 
   @IsOptional({ groups: [UPDATE, CREATE] })
