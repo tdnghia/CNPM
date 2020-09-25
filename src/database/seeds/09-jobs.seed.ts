@@ -4,10 +4,10 @@ import { Factory, Seeder } from 'typeorm-seeding';
 import { Category } from '../../entity/category.entity';
 import * as jobsByAndroid from '../data/jobs.json';
 import { Experience } from '../../common/enums/experience.enum';
-import { Job } from '../../common/enums/jobTypes.enum';
+import { JobType } from '../../common/enums/jobTypes.enum';
 import { enumToArray } from '../../core/utils/helper';
 import { Tag } from '../../entity/tag.entity';
-import { Jobs } from '../../entity/job.entity';
+import { Job } from '../../entity/job.entity';
 import * as _ from 'lodash';
 
 export default class JobsSeeder implements Seeder {
@@ -55,7 +55,7 @@ export default class JobsSeeder implements Seeder {
     const author = await authorRepository.find();
     const date = new Date();
     const experienceArray = enumToArray(Experience);
-    const jobTypeArray = enumToArray(Job);
+    const jobTypeArray = enumToArray(JobType);
 
     const tags = await tagsRepository.find();
     const androidCate = await cateRepository.findOne({
@@ -80,7 +80,7 @@ export default class JobsSeeder implements Seeder {
           NewTags.push(tagId);
         }
       }
-      const newJob = await factory(Jobs)({
+      const newJob = await factory(Job)({
         payload: {
           name: jobsByAndroid[index].name,
           content: jobsByAndroid[index].content,
