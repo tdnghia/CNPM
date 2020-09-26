@@ -9,7 +9,7 @@ import {
   Get,
   UseGuards,
   Put,
-  Body,
+  Body, BadRequestException, ConflictException
 } from '@nestjs/common';
 import {
   CrudController,
@@ -164,7 +164,7 @@ export class UserController extends BaseController<User> {
             message: 'User or Email already exists',
             status: HttpStatus.CONFLICT,
           },
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.CONFLICT,
         );
       } else {
         throw new HttpException(

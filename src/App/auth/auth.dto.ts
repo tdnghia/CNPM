@@ -15,7 +15,7 @@ export class LoginDTO {
     type: String,
     description: 'username or email',
     required: true,
-    example: 'ngotruongquoc0102@gmail.com',
+    example: 'admin@gmail.com',
   })
   @IsNotEmpty({ groups: [CREATE] })
   email: string;
@@ -53,7 +53,7 @@ export class RegisterDTO {
   password: string;
 
   @IsString()
-  @Match('password')
+  @Match('password', { message: 'Password Does not Match' })
   @ApiProperty({
     type: String,
     description: 'Confirm password',
@@ -64,16 +64,6 @@ export class RegisterDTO {
   @IsString()
   @ApiProperty({ type: String, description: 'Name' })
   name: string;
-
-  @ApiProperty({
-    example: 'MALE',
-    type: String,
-    description: 'Gender',
-    required: true,
-  })
-  @IsNotEmpty({ groups: [CREATE] })
-  @IsString({ always: true })
-  gender: string;
 }
 
 export class ChangePwdDTO {
