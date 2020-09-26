@@ -6,9 +6,6 @@ import {
   UsePipes,
   UseGuards,
   Put,
-  ExecutionContext,
-  Inject,
-  Req,
 } from '@nestjs/common';
 import { AuthServices } from './auth.service';
 import { LoginDTO, RegisterDTO, ChangePwdDTO } from 'src/App/auth/auth.dto';
