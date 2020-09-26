@@ -8,7 +8,12 @@ export default class CreateRoles implements Seeder {
       .createQueryBuilder()
       .insert()
       .into(Role)
-      .values([{ role: 'Admin' }, { role: 'Moderator' }, { role: 'User' }])
+      .values([
+        { role: 'Admin' },
+        { role: 'Moderator' },
+        { role: 'User' },
+        { role: 'Contributor' },
+      ])
       .execute();
   }
 }

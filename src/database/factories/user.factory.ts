@@ -6,8 +6,6 @@ import { Gender } from '../../common/enums/gender.enum';
 import { Profile } from '../../entity/profile.entity';
 
 define(User, (faker: typeof Faker, context: { roles: string[] }) => {
-  console.log('faker', typeof enumToArray(Gender)[1]);
-
   const gender = faker.random.number(1);
   const firstName = faker.name.firstName(gender);
   const lastName = faker.name.lastName(gender);
@@ -17,11 +15,10 @@ define(User, (faker: typeof Faker, context: { roles: string[] }) => {
   const roleId = faker.random.number({ min: 2, max: 3 });
   const user = new User();
   const profile = new Profile();
-  user.name = `${firstName} ${lastName}`;
   user.email = email;
   user.password = 'admin';
-  user.phone = phone;
-  // user.profile. = avatar;
+  profile.name = `${firstName} ${lastName}`;
+  profile.phone = phone;
   profile.profileUrl = avatar;
   user.profile = profile;
   user.roleId = roleId;

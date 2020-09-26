@@ -3,7 +3,6 @@ import {
   Column,
   ManyToOne,
   JoinColumn,
-  Unique,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { IsInt } from 'class-validator';
