@@ -1,0 +1,6 @@
+[
+  { "method": "CREATE" },
+  { "method": "READ" },
+  { "method": "UPDATE" },
+  { "method": "DELETE" }
+]

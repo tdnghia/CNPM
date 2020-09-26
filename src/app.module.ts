@@ -15,12 +15,18 @@ import { TypeOrmConfigService } from 'src/config/typeorm.config';
 import { HttpErorFilter } from 'src/shared/http-exception.filter';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { TransformInterceptor } from './interceptors/TransformInterceptor';
+import { PermissionModule } from './App/permission/permission.module';
+import { RolesModule } from './App/roles/roles.module';
+
+// import { PermissionController } from './permission/permission.controller';
 @Module({
   imports: [
     AccessControlModule.forRoles(roles),
     ConfigModule.forRoot(),
     UsersModule,
+    RolesModule,
     CategoriesModule,
+    PermissionModule,
     AuthModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
