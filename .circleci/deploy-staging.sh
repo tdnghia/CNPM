@@ -1,5 +1,5 @@
 # cp .env.staging .env
-rm -rf  .gitignore .eslintignore .eslintrc .circleci node_modules src test
+rm -rf .gitignore .eslintignore .eslintrc .circleci node_modules src test
 rm .env.example README.md
 
 ssh root@3.15.214.83 "cd /home/CNPM && rimraf dist"
