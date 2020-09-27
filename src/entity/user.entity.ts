@@ -9,6 +9,7 @@ import {
   OneToMany,
   ManyToMany,
   JoinTable,
+  Unique,
 } from 'typeorm';
 import { Base } from '../entity/base.entity';
 import {
@@ -18,13 +19,12 @@ import {
   MaxLength,
   IsEmail,
   IsBoolean,
-  IsPhoneNumber,
   IsIn,
   ValidateNested,
   MinLength,
 } from 'class-validator';
 import * as bcrypt from 'bcrypt';
-import { Type } from 'class-transformer';
+import { Exclude, Type } from 'class-transformer';
 import { CrudValidationGroups } from '@nestjsx/crud';
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from '../entity/role.entity';
@@ -38,6 +38,7 @@ import { Job } from './job.entity';
 const { CREATE, UPDATE } = CrudValidationGroups;
 
 @Entity('users')
+@Unique(['email'])
 export class User extends Base {
   @PrimaryGeneratedColumn('uuid')
   id: string;
@@ -66,6 +67,11 @@ export class User extends Base {
   @MaxLength(255, { always: true, message: 'Max length is 255' })
   @Column({ type: 'varchar', length: 255 })
   password: string;
+
+  @Exclude()
+  @IsBoolean()
+  @Column({ type: 'boolean', default: false })
+  ExpiredToken: boolean;
 
   @ApiProperty({ example: '3 | 4' })
   @IsIn([2, 3, 4])

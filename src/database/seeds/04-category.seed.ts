@@ -30,8 +30,6 @@ export default class CreateCategories implements Seeder {
       { name: 'Business Analyst', user: user[Math.floor(Math.random() * 6)] },
     ];
 
-    console.log('cate', cateBySkill);
-
     for (let index = 0; index < TopCate.length; index++) {
       await factory(Category)({
         payload: TopCate[index],

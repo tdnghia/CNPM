@@ -9,10 +9,10 @@ export default class CreateRoles implements Seeder {
       .insert()
       .into(Role)
       .values([
-        { role: 'Admin' },
-        { role: 'Moderator' },
-        { role: 'User' },
-        { role: 'Contributor' },
+        { role: 'ADMIN' },
+        { role: 'MODERATOR' },
+        { role: 'USER' },
+        { role: 'CONTRIBUTOR' },
       ])
       .execute();
   }
