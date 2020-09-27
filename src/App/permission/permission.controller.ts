@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { PermissionService } from './permission.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
+import { CrudRequest, Override, ParsedRequest } from '@nestjsx/crud';
 import { RolePermissionRepository } from './rolePermission.repository';
 import { RolesRepository } from '../roles/roles.repository';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -37,5 +37,10 @@ export class PermissionController {
       });
       console.log('permission', permission);
     } catch (error) {}
+  }
+
+  @Post()
+  async updatePermission() {
+    console.log('here');
   }
 }
