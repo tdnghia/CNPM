@@ -1,16 +1,17 @@
 import {
   Controller,
+  Response,
   HttpStatus,
   HttpException,
   Param,
+  HttpCode,
   InternalServerErrorException,
   Get,
+  UseGuards,
   Put,
-  Body,
+  Body, BadRequestException, ConflictException
 } from '@nestjs/common';
 import {
-  CrudController,
-  CrudService,
   CrudRequest,
   CreateManyDto,
   Crud,
@@ -31,7 +32,6 @@ import {
   ApiUnauthorizedResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UseRoles } from 'nest-access-control';
 import { methodEnum } from 'src/common/enums/method.enum';
 import { ModuleEnum } from 'src/common/enums/module.enum';
 
@@ -86,7 +86,7 @@ export class UserController extends BaseController<User> {
   @Override('getManyBase')
   @Methods(methodEnum.READ)
   async getAll(@ParsedRequest() req: CrudRequest) {
-    // req.parsed.search.$and = [{ isActive: { $eq: true } }];
+    req.parsed.search.$and = [{ isActive: { $eq: true } }];
     return await this.base.getManyBase(req);
   }
 
@@ -114,11 +114,6 @@ export class UserController extends BaseController<User> {
   }
 
   @Override('updateOneBase')
-  @UseRoles({
-    resource: 'user',
-    action: 'update',
-    possession: 'any',
-  })
   async restore(@ParsedRequest() req: CrudRequest): Promise<void> {
     const id = req.parsed.paramsFilter.find(
       f => f.field === 'id' && f.operator === '$eq',
@@ -142,11 +137,6 @@ export class UserController extends BaseController<User> {
   @Override('createOneBase')
   @ApiOkResponse({ description: 'User login' })
   @ApiUnauthorizedResponse({ description: 'Invalid credential' })
-  @UseRoles({
-    resource: 'user',
-    action: 'create',
-    possession: 'any',
-  })
   async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: User) {
     try {
       console.log('herasdase');
@@ -161,7 +151,7 @@ export class UserController extends BaseController<User> {
             message: 'User or Email already exists',
             status: HttpStatus.CONFLICT,
           },
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.CONFLICT,
         );
       } else {
         throw new HttpException(
@@ -202,7 +192,7 @@ export class UserController extends BaseController<User> {
           deletedAt: Not(IsNull()),
         },
         relations: ['role'],
-        select: ['id', 'email', 'createdAt', 'role'],
+        select: ['id', 'email', 'gender', 'createdAt', 'role'],
       });
       return data;
     } catch (error) {
@@ -254,11 +244,6 @@ export class UserController extends BaseController<User> {
     }
   }
   @Put('updateOne/:id')
-  @UseRoles({
-    resource: 'user',
-    action: 'update',
-    possession: 'any',
-  })
   async updateUser(@Body() dto: Partial<User>, @Param('id') id: string) {
     try {
       const result = await this.repository.findOne({ id });
