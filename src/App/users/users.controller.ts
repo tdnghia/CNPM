@@ -1,12 +1,15 @@
 import {
   Controller,
+  Response,
   HttpStatus,
   HttpException,
   Param,
+  HttpCode,
   InternalServerErrorException,
   Get,
+  UseGuards,
   Put,
-  Body,
+  Body, BadRequestException, ConflictException
 } from '@nestjs/common';
 import {
   CrudController,
@@ -86,7 +89,7 @@ export class UserController extends BaseController<User> {
   @Override('getManyBase')
   @Methods(methodEnum.READ)
   async getAll(@ParsedRequest() req: CrudRequest) {
-    // req.parsed.search.$and = [{ isActive: { $eq: true } }];
+    req.parsed.search.$and = [{ isActive: { $eq: true } }];
     return await this.base.getManyBase(req);
   }
 
@@ -161,7 +164,7 @@ export class UserController extends BaseController<User> {
             message: 'User or Email already exists',
             status: HttpStatus.CONFLICT,
           },
-          HttpStatus.BAD_REQUEST,
+          HttpStatus.CONFLICT,
         );
       } else {
         throw new HttpException(
@@ -202,7 +205,7 @@ export class UserController extends BaseController<User> {
           deletedAt: Not(IsNull()),
         },
         relations: ['role'],
-        select: ['id', 'email', 'createdAt', 'role'],
+        select: ['id', 'email', 'gender', 'createdAt', 'role'],
       });
       return data;
     } catch (error) {
