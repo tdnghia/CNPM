@@ -55,6 +55,8 @@ jobs:
       - run:
           name: Setup
           command: |
+            git config user.email "ngotruongquoc0102@gmail.com"
+            git config user.name "truongquoc"
             npm install
             npm run build
             ssh-keyscan 3.15.214.83 >> ~/.ssh/known_hosts
