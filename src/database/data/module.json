@@ -1,7 +1,0 @@
-[
-  { "module": "USER" },
-  { "module": "BOOK" },
-  { "module": "PAYMENT" },
-  { "module": "CATEGORY" },
-  { "module": "TAG" }
-]

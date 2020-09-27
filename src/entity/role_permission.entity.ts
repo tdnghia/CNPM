@@ -38,6 +38,6 @@ export class RolePermission {
   @JoinColumn({ name: 'permissionId' })
   permission: PermissionsEntity;
 
-  @Column({ type: 'enum', enum: posessionEnum, default: 'any' })
+  @Column({ type: 'enum', enum: posessionEnum, default: 'ANY' })
   posession: string;
 }

@@ -6,11 +6,8 @@ import { UsersModule } from './App/users/users.module';
 import { CategoriesModule } from 'src/App/categories/categories.module';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthModule } from './App/auth/auth.module';
-import { AccessControlModule } from 'nest-access-control';
-import { roles } from './app.role';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule } from '@nestjs/config';
-import * as path from 'path';
 import { TypeOrmConfigService } from 'src/config/typeorm.config';
 import { HttpErorFilter } from 'src/shared/http-exception.filter';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
@@ -21,7 +18,6 @@ import { RolesModule } from './App/roles/roles.module';
 // import { PermissionController } from './permission/permission.controller';
 @Module({
   imports: [
-    AccessControlModule.forRoles(roles),
     ConfigModule.forRoot(),
     UsersModule,
     RolesModule,
