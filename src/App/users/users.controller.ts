@@ -12,8 +12,6 @@ import {
   Body, BadRequestException, ConflictException
 } from '@nestjs/common';
 import {
-  CrudController,
-  CrudService,
   CrudRequest,
   CreateManyDto,
   Crud,
@@ -34,7 +32,6 @@ import {
   ApiUnauthorizedResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UseRoles } from 'nest-access-control';
 import { methodEnum } from 'src/common/enums/method.enum';
 import { ModuleEnum } from 'src/common/enums/module.enum';
 
@@ -117,11 +114,6 @@ export class UserController extends BaseController<User> {
   }
 
   @Override('updateOneBase')
-  @UseRoles({
-    resource: 'user',
-    action: 'update',
-    possession: 'any',
-  })
   async restore(@ParsedRequest() req: CrudRequest): Promise<void> {
     const id = req.parsed.paramsFilter.find(
       f => f.field === 'id' && f.operator === '$eq',
@@ -145,11 +137,6 @@ export class UserController extends BaseController<User> {
   @Override('createOneBase')
   @ApiOkResponse({ description: 'User login' })
   @ApiUnauthorizedResponse({ description: 'Invalid credential' })
-  @UseRoles({
-    resource: 'user',
-    action: 'create',
-    possession: 'any',
-  })
   async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: User) {
     try {
       console.log('herasdase');
@@ -257,11 +244,6 @@ export class UserController extends BaseController<User> {
     }
   }
   @Put('updateOne/:id')
-  @UseRoles({
-    resource: 'user',
-    action: 'update',
-    possession: 'any',
-  })
   async updateUser(@Body() dto: Partial<User>, @Param('id') id: string) {
     try {
       const result = await this.repository.findOne({ id });

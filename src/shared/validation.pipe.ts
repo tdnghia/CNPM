@@ -4,9 +4,12 @@ import {
   ArgumentMetadata,
   HttpException,
   HttpStatus,
+  BadRequestException,
 } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
+import * as _ from 'lodash';
+
 @Injectable()
 export class ValidationPipe implements PipeTransform {
   async transform(value: any, { metatype }: ArgumentMetadata) {
@@ -25,7 +28,12 @@ export class ValidationPipe implements PipeTransform {
 
     const errors = await validate(object);
     if (errors.length > 0) {
-      throw new HttpException('Validation failed', HttpStatus.BAD_REQUEST);
+      // const newErrorArr: Array<any> = [];
+      // errors.map((err: any) => {
+      //   newErrorArr.push(_.pick(err, ['constraints', 'property']));
+      // });
+
+      throw new BadRequestException(errors);
     }
     return value;
   }

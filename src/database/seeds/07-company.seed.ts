@@ -57,7 +57,6 @@ export default class CompanySeeder implements Seeder {
               introduction: 'What makes you special',
             },
           }).create();
-          console.log('profile', profile);
           const firstName = Faker.name.firstName();
           const lastName = Faker.name.lastName();
           const email = Faker.internet.email(firstName, lastName);

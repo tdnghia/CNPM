@@ -13,8 +13,10 @@ export class RoleGuard implements CanActivate {
       context.getHandler(),
     );
     let scopePermission = null;
+    console.log('req', req.user);
+
     switch (req.user.users.role) {
-      case 'Moderator': {
+      case 'MODERATOR': {
         if (method[0] === 'Update' || method[0] === 'Delete') {
           scopePermission = `${_.toUpper(req.user.users.role)}_${_.toUpper(
             method[0],
@@ -26,7 +28,7 @@ export class RoleGuard implements CanActivate {
         }
         break;
       }
-      case 'Admin': {
+      case 'ADMIN': {
         scopePermission = `${_.toUpper(req.user.users.role)}_${_.toUpper(
           method[0],
         )}_ANY_${_.toUpper(module[0])}`;
