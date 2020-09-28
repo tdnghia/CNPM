@@ -13,15 +13,17 @@ import { HttpErorFilter } from 'src/shared/http-exception.filter';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { TransformInterceptor } from './interceptors/TransformInterceptor';
 import { PermissionModule } from './App/permission/permission.module';
+<<<<<<< HEAD
 import { RolesModule } from './App/roles/roles.module';
 import { JobsModule } from './App/jobs/jobs.module';
+=======
+>>>>>>> a038eb65204316e8f8b437a7153ea18ee60b4578
 
 // import { PermissionController } from './permission/permission.controller';
 @Module({
   imports: [
     ConfigModule.forRoot(),
     UsersModule,
-    RolesModule,
     CategoriesModule,
     PermissionModule,
     AuthModule,
