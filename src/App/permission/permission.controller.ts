@@ -1,9 +1,14 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  InternalServerErrorException,
+  Param,
+} from '@nestjs/common';
 import { PermissionService } from './permission.service';
 import { ApiTags } from '@nestjs/swagger';
 import { CrudRequest, Override, ParsedRequest } from '@nestjsx/crud';
 import { RolePermissionRepository } from './rolePermission.repository';
-import { RolesRepository } from '../roles/roles.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/entity/role.entity';
 import { Repository } from 'typeorm';
@@ -23,24 +28,25 @@ export class PermissionController {
     private readonly roleRepository: Repository<Role>,
   ) {}
 
+  // @Get('/all')
+  // async getAllPermission(@ParsedRequest() req: CrudRequest) {
+  //   console.log('here');
+
+  //   return await this.permissionService.getAllPermission();
+  // }
+
   @Get(':role')
   async GetAllPermissionByRole(
     @ParsedRequest() req: CrudRequest,
     @Param('role') role: string,
   ) {
     try {
-      const roleId = await this.roleRepository.findOne({ where: { role } });
-      console.log('role', roleId);
-      const permission = await this.repository.find({
-        where: { roleId },
-        relations: ['permission'],
-      });
-      console.log('permission', permission);
-    } catch (error) {}
-  }
-
-  @Post()
-  async updatePermission() {
-    console.log('here');
+      const rolePermissions: any = await this.permissionService.getRolesPermission(
+        role,
+      );
+      return rolePermissions;
+    } catch (error) {
+      throw new InternalServerErrorException('Internal Server Error');
+    }
   }
 }
