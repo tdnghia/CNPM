@@ -34,7 +34,6 @@ export class PermissionController {
 
   //   return await this.permissionService.getAllPermission();
   // }
-
   @Get(':role')
   async GetAllPermissionByRole(
     @ParsedRequest() req: CrudRequest,
