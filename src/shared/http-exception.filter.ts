@@ -42,13 +42,28 @@ export class HttpErorFilter implements ExceptionFilter {
     const messageErr = exceptionError.error
       ? newValidationErrors
       : exceptionError;
-    response.status(status).json({
-      statusCode: status,
-      timestamp: new Date().toISOString(),
-      path: request.url,
-      method: request.method,
-      message: messageErr,
-    });
+
+    switch (status) {
+      case 400:
+        response.status(status).json({
+          statusCode: status,
+          timestamp: new Date().toISOString(),
+          path: request.url,
+          method: request.method,
+          message: messageErr,
+        });
+        break;
+
+      default:
+        response.status(status).json({
+          statusCode: status,
+          timestamp: new Date().toISOString(),
+          path: request.url,
+          method: request.method,
+          message: exceptionError.message,
+        });
+        break;
+    }
   }
 
   // private _validationFilter(validationErrors: ValidationError[]) {
