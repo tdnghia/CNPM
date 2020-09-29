@@ -88,7 +88,7 @@ export class UserController extends BaseController<User> {
   @Override('getManyBase')
   @Methods(methodEnum.READ)
   async getAll(@ParsedRequest() req: CrudRequest) {
-    req.parsed.search.$and = [{ isActive: { $eq: true } }];
+    // req.parsed.search.$and = [{ isActive: { $eq: true } }];
     return await this.base.getManyBase(req);
   }
 

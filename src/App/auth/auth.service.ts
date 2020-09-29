@@ -43,6 +43,8 @@ export class AuthServices {
   async login(data: LoginDTO) {
     try {
       const user: User = await this.validateUser(data);
+      user.ExpiredToken = false;
+      this.userRepository.save(user);
       const payload: Payload = {
         id: user.id,
         role: user.role.role,
