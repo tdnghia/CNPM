@@ -19,6 +19,10 @@ export class HttpErorFilter implements ExceptionFilter {
     const validationErrors: Array<ValidationError> = exceptionError.message;
     const newValidationErrors: Array<any> = [];
 
+    console.log('status', status);
+
+    console.log('err', exceptionError);
+
     if (
       exceptionError.message[0] instanceof ValidationError &&
       _.isArray(exceptionError.message)
@@ -39,9 +43,9 @@ export class HttpErorFilter implements ExceptionFilter {
       }
     }
 
-    const messageErr = exceptionError.error
+    const messageErr = _.isArray(exceptionError.message)
       ? newValidationErrors
-      : exceptionError;
+      : exceptionError.message;
 
     switch (status) {
       case 400:
