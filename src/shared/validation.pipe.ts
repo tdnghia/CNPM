@@ -14,10 +14,7 @@ import * as _ from 'lodash';
 export class ValidationPipe implements PipeTransform {
   async transform(value: any, { metatype }: ArgumentMetadata) {
     if (value instanceof Object && this.isEmpty(value)) {
-      throw new HttpException(
-        'Validation failed: No body submited',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new BadRequestException('Validation Failed: No body submited');
     }
 
     if (!metatype || !this.toValidate(metatype)) {
