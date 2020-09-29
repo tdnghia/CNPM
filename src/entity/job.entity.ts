@@ -73,8 +73,7 @@ export class Job extends Base {
   @Column({ type: 'enum', enum: Experience, nullable: true })
   experience: string;
 
-  @IsOptional({ groups: [UPDATE] })
-  @IsNotEmpty({ groups: [CREATE] })
+  @IsOptional({ groups: [UPDATE, CREATE] })
   @IsString({ always: true })
   @Column({ type: 'text' })
   slug: string;
@@ -88,7 +87,7 @@ export class Job extends Base {
   @IsOptional({ groups: [UPDATE, CREATE] })
   @IsBoolean({ always: true })
   @Column({ type: 'boolean', default: false })
-  experimentDate: boolean;
+  expirationDate: boolean;
 
   /**
    * Relation between User and Job
