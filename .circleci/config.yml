@@ -68,7 +68,7 @@ jobs:
     working_directory: /home/circleci/
     steps:
       - attach_workspace:
-          at: ~/
+          at: /
       - run:
           name: Deploy Over SSH
           command: |
