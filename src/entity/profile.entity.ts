@@ -71,7 +71,7 @@ export class Profile extends Base {
 
   @OneToOne(
     type => User,
-    user => user.address,
+    user => user.profile,
   )
   user: User;
 }

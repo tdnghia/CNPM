@@ -21,6 +21,7 @@ import {
   ParsedRequest,
   ParsedBody,
 } from '@nestjsx/crud';
+import generatePassword = require('password-generator');
 import { User } from '../../entity/user.entity';
 import { UserService } from './users.service';
 import { UserRepository } from './user.repository';
@@ -81,14 +82,15 @@ export class UserController extends BaseController<User> {
   ) {
     super(repository);
   }
-
+  private maxLength = 12;
+  private minLength = 8;
   // get base(): CrudController<User> {
   //   return this;
   // }
   @Override('getManyBase')
   @Methods(methodEnum.READ)
   async getAll(@ParsedRequest() req: CrudRequest) {
-    req.parsed.search.$and = [{ isActive: { $eq: true } }];
+    // req.parsed.search.$and = [{ isActive: { $eq: true } }];
     return await this.base.getManyBase(req);
   }
 
@@ -141,7 +143,6 @@ export class UserController extends BaseController<User> {
   @ApiUnauthorizedResponse({ description: 'Invalid credential' })
   async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: User) {
     try {
-      console.log('herasdase');
       const data = await this.base.createOneBase(req, dto);
       return data;
     } catch (error) {
@@ -202,6 +203,57 @@ export class UserController extends BaseController<User> {
     }
   }
 
+  private isStrongEnough(password: string) {
+    const UPPER_RE = /([A-Z])/g;
+    const LOWER_RE = /([a-z])/g;
+    const NUMBER_RE = /([\d])/;
+    const uc = password.match(UPPER_RE);
+    const lc = password.match(LOWER_RE);
+    const nc = password.match(NUMBER_RE);
+    const uppercaseMinCount = 3;
+    const lowercaseMinCount = 3;
+    const numberMinCount = 2;
+
+    return (
+      password.length >= this.minLength &&
+      password.length <= this.maxLength &&
+      uc &&
+      lc &&
+      nc &&
+      uc.length >= uppercaseMinCount &&
+      lc.length >= lowercaseMinCount &&
+      nc.length >= numberMinCount
+    );
+  }
+  // Generate random password Function
+  private customerPassword() {
+    let password = '';
+    const randomLength = Math.floor(
+      Math.random() * (this.maxLength - this.minLength) + this.minLength,
+    );
+    while (!this.isStrongEnough(password)) {
+      password = generatePassword(randomLength, false, /[\d\w]/);
+    }
+    return password;
+  }
+  @Get('unauthorized')
+  async getUnAuthorized(@ParsedRequest() req: CrudRequest) {
+    try {
+      const data = this.repository.find({
+        where: {
+          active: false,
+        },
+        relations: ['role'],
+        select: ['id', 'email', 'createdAt', 'role'],
+      });
+      return data;
+    } catch (error) {
+      throw new InternalServerErrorException('Error: Internal Server');
+    }
+  }
+
+  @Put('identify')
+  async authorizedUser(@ParsedRequest() req: CrudRequest) {}
   @Override('createManyBase')
   async createMany(
     @ParsedRequest() req: CrudRequest,

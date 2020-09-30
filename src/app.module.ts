@@ -13,6 +13,7 @@ import { HttpErorFilter } from 'src/shared/http-exception.filter';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { TransformInterceptor } from './interceptors/TransformInterceptor';
 import { PermissionModule } from './App/permission/permission.module';
+import { JobsModule } from './App/jobs/jobs.module';
 
 // import { PermissionController } from './permission/permission.controller';
 @Module({
@@ -22,6 +23,7 @@ import { PermissionModule } from './App/permission/permission.module';
     CategoriesModule,
     PermissionModule,
     AuthModule,
+    JobsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useClass: TypeOrmConfigService,

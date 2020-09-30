@@ -55,39 +55,58 @@ export class CategoriesController extends BaseController<Category> {
   }
 
   @Override('createOneBase')
-    async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Category) {
-        try {
-            const category = await this.repository.findOne({ where: { name: dto.name } });
-            if (!category) {
-                dto.slug = getSlug(dto.name);
-                const data = await this.base.createOneBase(req, dto);
-                return data;
-            }
-            throw new HttpException(
-                {
-                  message: 'Category name already exists',
-                  status: HttpStatus.CONFLICT,
-                },
-                HttpStatus.CONFLICT,
-            );
-        } catch (error) {
-            console.log('err', error);
-            throw new HttpException(
-                {
-                    message: 'Internal Server error',
-                    status: HttpStatus.BAD_REQUEST,
-                },
-                HttpStatus.BAD_REQUEST,
-            );
-        }
+  async createOne(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: Category,
+  ) {
+    try {
+      const category = await this.repository.findOne({
+        where: { name: dto.name },
+      });
+      if (!category) {
+        dto.slug = getSlug(dto.name);
+        const data = await this.base.createOneBase(req, dto);
+        return data;
+      }
+      throw new HttpException(
+        {
+          message: 'Category name already exists',
+          status: HttpStatus.CONFLICT,
+        },
+        HttpStatus.CONFLICT,
+      );
+    } catch (error) {
+      console.log('err', error);
+      throw new HttpException(
+        {
+          message: 'Internal Server error',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
+  }
 
   @Override('getOneBase')
   async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Category) {
     try {
+      console.log('nheree');
       const data = await this.base.getOneBase(req);
+      console.log('data', data);
+
+      if (!data) {
+        throw new HttpException(
+          {
+            message: 'Category not found',
+            error: HttpStatus.NOT_FOUND,
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
       return data;
     } catch (error) {
+      console.log('error', error);
+
       throw new HttpException(
         {
           message: 'Category not found',
@@ -99,40 +118,43 @@ export class CategoriesController extends BaseController<Category> {
   }
 
   @Put('updateOne/:slug')
-    async updateUser(@Body() dto: Partial<Category>, @Param('slug') slug: string) {
-        try {
-            const result = await this.repository.findOne({ slug: slug });
-            if (!result) {
-                throw new HttpException(
-                    {
-                        message: 'Not Found',
-                        status: HttpStatus.NOT_FOUND,
-                    },
-                    HttpStatus.NOT_FOUND,
-                );
-            }
-            const category = await this.repository.findOne({ name: dto.name });
-            if (category) {
-                throw new HttpException(
-                    {
-                        message: 'Category name already exists',
-                        status: HttpStatus.CONFLICT,
-                    },
-                    HttpStatus.CONFLICT,
-                );
-            }
-            dto.slug = getSlug(dto.name);
-            return await this.repository.update({ slug }, dto);
-        } catch (error) {
-            throw new HttpException(
-                {
-                    message: 'Internal Server Error',
-                    status: HttpStatus.BAD_REQUEST,
-                },
-                HttpStatus.BAD_REQUEST,
-            );
-        }
+  async updateUser(
+    @Body() dto: Partial<Category>,
+    @Param('slug') slug: string,
+  ) {
+    try {
+      const result = await this.repository.findOne({ slug: slug });
+      if (!result) {
+        throw new HttpException(
+          {
+            message: 'Not Found',
+            status: HttpStatus.NOT_FOUND,
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const category = await this.repository.findOne({ name: dto.name });
+      if (category) {
+        throw new HttpException(
+          {
+            message: 'Category name already exists',
+            status: HttpStatus.CONFLICT,
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
+      dto.slug = getSlug(dto.name);
+      return await this.repository.update({ slug }, dto);
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: 'Internal Server Error',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
     }
+  }
 
   @Override('deleteOneBase')
   async softDelete(@ParsedRequest() req: CrudRequest): Promise<void> {
