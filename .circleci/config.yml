@@ -46,7 +46,7 @@ jobs:
   build:
     docker:
       - image: circleci/node:12
-    working_directory: ~/CNPM
+    working_directory: /home/CNPM
     steps:
       - add_ssh_keys:
           fingerprints:
@@ -72,7 +72,7 @@ jobs:
       - run:
           name: Deploy Over SSH
           command: |
-            cd CNPM
+            cd /home/CNPM
             chmod 777 ./.circleci/deploy-staging.sh
             ./.circleci/deploy-staging.sh
 
