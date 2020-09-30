@@ -53,8 +53,8 @@ export class AuthController {
   async changePwd(@Body() body: ChangePwdDTO, @User() user) {
     return this.authService.changePwd(user, body);
   }
-  @Get('me')
-  async getProfile() {}
+  // @Get('me')
+  // async getProfile() {}
 
   @Post('forgot-password')
   async forgotPassword() {}
