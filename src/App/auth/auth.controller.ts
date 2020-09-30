@@ -56,6 +56,6 @@ export class AuthController {
   // @Get('me')
   // async getProfile() {}
 
-  @Post('forgot-password')
-  async forgotPassword() {}
+  // @Post('forgot-password')
+  // async forgotPassword() {}
 }
