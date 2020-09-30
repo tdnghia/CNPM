@@ -46,7 +46,7 @@ jobs:
   build:
     docker:
       - image: circleci/node:12
-    working_directory: ~/CNPMs
+    working_directory: ~/CNPM
     steps:
       - add_ssh_keys:
           fingerprints:
