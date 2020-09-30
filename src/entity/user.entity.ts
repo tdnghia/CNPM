@@ -73,6 +73,10 @@ export class User extends Base {
   @Column({ type: 'boolean', default: false })
   ExpiredToken: boolean;
 
+  @IsBoolean()
+  @Column({ type: 'boolean', default: true })
+  active: boolean;
+
   @ApiProperty({ example: '3 | 4' })
   @IsIn([2, 3, 4])
   @Column({ type: 'int', default: 4 })

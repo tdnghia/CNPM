@@ -8,7 +8,12 @@ import {
   Put,
 } from '@nestjs/common';
 import { AuthServices } from './auth.service';
-import { LoginDTO, RegisterDTO, ChangePwdDTO } from 'src/App/auth/auth.dto';
+import {
+  LoginDTO,
+  RegisterDTO,
+  ChangePwdDTO,
+  EmployersDTO,
+} from 'src/App/auth/auth.dto';
 import { ValidationPipe } from 'src/shared/validation.pipe';
 import { ApiTags } from '@nestjs/swagger';
 import { User } from 'src/common/decorators/user.decorator';
@@ -37,9 +42,20 @@ export class AuthController {
     return this.authService.register(data);
   }
 
+  @Post('newlead')
+  @UsePipes(new ValidationPipe())
+  async addLead(@Body() data: EmployersDTO) {
+    return this.authService.addLead(data);
+  }
+
   @Put('me/password')
   @UseGuards(JwtAuthGuard)
   async changePwd(@Body() body: ChangePwdDTO, @User() user) {
     return this.authService.changePwd(user, body);
   }
+  @Get('me')
+  async getProfile() {}
+
+  @Post('forgot-password')
+  async forgotPassword() {}
 }
