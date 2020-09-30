@@ -66,6 +66,35 @@ export class RegisterDTO {
   name: string;
 }
 
+export class EmployersDTO {
+  @ApiProperty({ example: 'Company Name' })
+  @IsString({ always: true })
+  companyName: string;
+
+  @ApiProperty({ example: 'http://www.careernetwork.com' })
+  @IsString({ always: true })
+  website: string;
+
+  @ApiProperty({ example: 'Da Nang' })
+  @IsString({ always: true })
+  city: string;
+
+  @ApiProperty({ example: 'Your Name' })
+  @IsString({ always: true })
+  yourName: string;
+
+  @ApiProperty({ example: 'Title' })
+  @IsString({ always: true })
+  title: string;
+
+  @ApiProperty({ example: 'admin@gmail.com' })
+  @IsString({ always: true })
+  email: string;
+
+  @ApiProperty({ example: '032248798' })
+  @IsString({ always: true })
+  phone: string;
+}
 export class ChangePwdDTO {
   @ApiProperty({
     example: '12345678',
