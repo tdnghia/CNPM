@@ -57,7 +57,7 @@ jobs:
           command: |
             npm install
             npm run build
-            ssh-keyscan 3.15.214.83 >> ~/.ssh/known_hosts
+            ssh-keyscan 18.219.72.101 >> ~/.ssh/known_hosts
       - persist_to_workspace:
           root: /home/circleci
           paths: CNPM
