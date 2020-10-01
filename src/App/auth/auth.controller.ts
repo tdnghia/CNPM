@@ -48,14 +48,14 @@ export class AuthController {
     return this.authService.addLead(data);
   }
 
-  // @Put('me/password')
-  // @UseGuards(JwtAuthGuard)
-  // async changePwd(@Body() body: ChangePwdDTO, @User() user) {
-  //   return this.authService.changePwd(user, body);
-  // }
-  // @Get('me')
-  // async getProfile() {}
+  @Put('me/password')
+  @UseGuards(JwtAuthGuard)
+  async changePwd(@Body() body: ChangePwdDTO, @User() user) {
+    return this.authService.changePwd(user, body);
+  }
+  @Get('me')
+  async getProfile() {}
 
-  // @Post('forgot-password')
-  // async forgotPassword() {}
+  @Post('forgot-password')
+  async forgotPassword() {}
 }
