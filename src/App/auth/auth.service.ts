@@ -12,9 +12,10 @@ import { Repository } from 'typeorm';
 import { Role } from 'src/entity/role.entity';
 import { UserRepository } from 'src/App/users/user.repository';
 import * as bcrypt from 'bcrypt';
-import { LoginDTO, RegisterDTO, ChangePwdDTO } from './auth.dto';
+import { LoginDTO, RegisterDTO, ChangePwdDTO, EmployersDTO } from './auth.dto';
 import { sign } from 'jsonwebtoken';
 import { Payload } from 'src/types/payload';
+
 @Injectable()
 export class AuthServices {
   constructor(
@@ -43,6 +44,8 @@ export class AuthServices {
   async login(data: LoginDTO) {
     try {
       const user: User = await this.validateUser(data);
+      user.ExpiredToken = false;
+      this.userRepository.save(user);
       const payload: Payload = {
         id: user.id,
         role: user.role.role,
@@ -78,6 +81,36 @@ export class AuthServices {
           HttpStatus.CONFLICT,
         );
       }
+      throw new InternalServerErrorException('Internal Server Error');
+    }
+  }
+
+  async addLead(dto: EmployersDTO) {
+    try {
+      const data = this.userRepository.create({
+        roleId: 3,
+        email: dto.email,
+        active: false,
+        password: 'default',
+        profile: {
+          phone: dto.phone,
+          pageURL: dto.website,
+          name: dto.companyName,
+        },
+      });
+      return await this.userRepository.save(data);
+    } catch (error) {
+      if (error.code == '23505') {
+        throw new HttpException(
+          {
+            message: 'Email Already exists',
+            code: HttpStatus.CONFLICT,
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
+      console.log('error', error);
+
       throw new InternalServerErrorException('Internal Server Error');
     }
   }

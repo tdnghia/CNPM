@@ -22,17 +22,6 @@ export default class CreatePermissions implements Seeder {
 
     const appRole = enumToArray(AppRoles);
 
-    // await connection
-    //   .createQueryBuilder()
-    //   .insert()
-    //   .into(ModulesEntity)
-    //   .values([
-    //     {
-    //       module: 'CATEGORY',
-    //     },
-    //   ])
-    //   .execute();
-
     for (let index = 0; index < appRole.length; index++) {
       const splitRolePermission = _.split(appRole[index], '_');
 
