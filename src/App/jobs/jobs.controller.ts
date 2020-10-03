@@ -38,7 +38,15 @@ import { JobService } from './jobs.service';
   },
   query: {
     filter: [],
-    join: {},
+    join: {
+      user: {
+        eager: true,
+        exclude: ['password'],
+      },
+      'user.profile': {
+        eager: true,
+      },
+    },
   },
 })
 @ApiTags('v1/jobs')
@@ -67,6 +75,15 @@ export class JobsController extends BaseController<Job> {
         },
         HttpStatus.BAD_REQUEST,
       );
+    }
+  }
+
+  @Override('getManyBase')
+  async getMany(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
+    try {
+      return await this.base.getManyBase(req);
+    } catch (error) {
+      throw new InternalServerErrorException('Internal Server Error');
     }
   }
 
