@@ -52,7 +52,9 @@ export default class JobsSeeder implements Seeder {
       4400,
       5000,
     ];
-    const author = await authorRepository.find();
+    const author = await authorRepository.find({ where: { roleId: 4 } });
+    console.log('author', author);
+
     const date = new Date();
     const experienceArray = enumToArray(Experience);
     const jobTypeArray = enumToArray(JobType);
@@ -95,7 +97,7 @@ export default class JobsSeeder implements Seeder {
               Math.floor(Math.floor(Math.random() * experienceArray.length))
             ],
           deadline: new Date(`${currentYear}-${currentMonth}-${dueDate}`),
-          user: author[Math.floor(Math.random() * 6)],
+          user: author[Math.floor(Math.random() * author.length)],
           category: androidCate,
         },
       }).create();

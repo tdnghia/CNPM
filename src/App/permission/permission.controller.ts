@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { PermissionService } from './permission.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CrudRequest, ParsedRequest } from '@nestjsx/crud';
+import { CrudRequest, Override, ParsedRequest } from '@nestjsx/crud';
 import { RolePermissionRepository } from './rolePermission.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/entity/role.entity';

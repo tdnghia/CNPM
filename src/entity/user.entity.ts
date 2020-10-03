@@ -116,7 +116,7 @@ export class User extends Base {
   @OneToOne(
     type => Profile,
     profile => profile.user,
-    { cascade: true },
+    { cascade: true, eager: true },
   )
   @JoinColumn()
   profile: Profile;
