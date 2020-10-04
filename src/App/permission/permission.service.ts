@@ -92,11 +92,13 @@ export class PermissionService {
   async saveRolePermission(
     rolePermission: RolePermission,
     data: PermissionDTO,
+    id: number,
   ) {
     try {
       const Object = rolePermission;
       Object.roleId = data.roleId;
       Object.posession = data.possession;
+      Object.permissionId = id;
 
       const getUserByRole = await this.userRepository.find({
         where: { roleId: data.roleId },

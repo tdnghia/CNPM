@@ -1,10 +1,13 @@
 import {
+  BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   InternalServerErrorException,
   NotFoundException,
   Param,
+  Post,
   Put,
   UsePipes,
 } from '@nestjs/common';
@@ -64,29 +67,54 @@ export class PermissionController {
   @Put(':id')
   @UsePipes(new ValidationPipe())
   async updatePermission(@Param('id') id: number, @Body() data: PermissionDTO) {
+    if (data.roleId == 1) {
+      throw new BadRequestException('Permission roleAdmin can not be Modified');
+    }
     const role = await this.roleRepository.findOne({
       where: { id: data.roleId },
     });
+    console.log('id', id);
 
     const permission = await this.permissionService.getOne(id);
+
     if (!role) {
       throw new NotFoundException('Role Not Found');
     }
+
     if (!permission) {
       throw new NotFoundException('Permission Not Found');
     }
-
-    let rolePermission: RolePermission = await this.repository.findOne({
+    let rolePermission = await this.repository.findOne({
       where: { roleId: role.id, permissionId: permission.id },
     });
 
     if (!rolePermission) {
       rolePermission = new RolePermission();
     }
-
     return await this.permissionService.saveRolePermission(
       rolePermission,
       data,
+      id,
     );
+  }
+
+  @Post()
+  async createOne(@Body() data: PermissionDTO) {
+    console.log('data', data);
+  }
+
+  @Delete(':id')
+  async deleteOne(@Param('id') id: number, @Body() data: PermissionDTO) {
+    if (data.roleId === 1) {
+      throw new BadRequestException('Permission roleAdmin can not be Modified');
+    }
+
+    const rolePermission = await this.repository.findOne({
+      where: { permissionId: id, roleId: data.roleId },
+    });
+    if (!rolePermission) {
+      throw new NotFoundException('Role Permission Not Found');
+    }
+    return await this.repository.delete(rolePermission);
   }
 }
