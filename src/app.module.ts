@@ -15,7 +15,6 @@ import { TransformInterceptor } from './interceptors/TransformInterceptor';
 import { PermissionModule } from './App/permission/permission.module';
 import { JobsModule } from './App/jobs/jobs.module';
 
-// import { PermissionController } from './permission/permission.controller';
 @Module({
   imports: [
     ConfigModule.forRoot(),

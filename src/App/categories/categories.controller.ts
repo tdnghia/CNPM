@@ -21,6 +21,7 @@ import {
   CrudRequest,
   ParsedBody,
   Crud,
+  CreateManyDto,
 } from '@nestjsx/crud';
 import { getSlug, slugToName } from 'src/core/utils/helper';
 import { Not, IsNull } from 'typeorm';
@@ -54,6 +55,13 @@ export class CategoriesController extends BaseController<Category> {
     super(repository);
   }
 
+  @Override('createManyBase')
+  async createMany(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: CreateManyDto<Category>,
+  ) {
+    console.log('dto', dto);
+  }
   @Override('createOneBase')
   async createOne(
     @ParsedRequest() req: CrudRequest,
