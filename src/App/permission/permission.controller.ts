@@ -60,6 +60,7 @@ export class PermissionController {
     }
   }
 
+  // @Override('createManyBase')
   @Put(':id')
   @UsePipes(new ValidationPipe())
   async updatePermission(@Param('id') id: number, @Body() data: PermissionDTO) {
