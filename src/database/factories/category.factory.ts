@@ -14,6 +14,7 @@ define(Category, (
   category.name = name;
   category.slug = slug;
   category.user = payload.user;
+  category.user = payload.user;
   if (!parent) {
     return category;
   }

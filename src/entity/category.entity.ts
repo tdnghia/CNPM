@@ -12,7 +12,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { TreeBase } from './tree.entity';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { CrudValidationGroups } from '@nestjsx/crud';
 import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
@@ -33,6 +33,7 @@ export class Category extends TreeBase {
     required: true,
     example: 'fiction',
   })
+  @IsString({ always: true })
   @Column({ type: 'text' })
   name: string;
 

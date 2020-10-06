@@ -23,22 +23,4 @@ export class BaseController<T> implements CrudController<T> {
   get base(): CrudController<T> {
     return this;
   }
-
-  // @Override('updateOneBase')
-  // @Patch(':id')
-  // async restore(@Param('id') id: number): Promise<void> {
-  //   console.log('here');
-
-  //   // const data = this.baseRepository.findOne({ where: { id } });
-  //   // if (!data) {
-  //   //   throw new HttpException(
-  //   //     {
-  //   //       message: 'Not Found',
-  //   //       status: HttpStatus.NOT_FOUND,
-  //   //     },
-  //   //     HttpStatus.NOT_FOUND,
-  //   //   );
-  //   // }
-  //   // await this.baseRepository.restore(id);
-  // }
 }
