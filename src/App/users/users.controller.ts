@@ -12,6 +12,7 @@ import {
   Body,
   BadRequestException,
   ConflictException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import {
   CrudRequest,
@@ -37,6 +38,7 @@ import {
 } from '@nestjs/swagger';
 import { methodEnum } from 'src/common/enums/method.enum';
 import { ModuleEnum } from 'src/common/enums/module.enum';
+import nodemailer from 'nodemailer';
 
 @Crud({
   model: {
@@ -91,6 +93,8 @@ export class UserController extends BaseController<User> {
   @Methods(methodEnum.READ)
   async getAll(@ParsedRequest() req: CrudRequest) {
     // req.parsed.search.$and = [{ isActive: { $eq: true } }];
+    console.log('req', req);
+
     return await this.base.getManyBase(req);
   }
 
@@ -252,8 +256,45 @@ export class UserController extends BaseController<User> {
     }
   }
 
-  @Put('identify')
-  async authorizedUser(@ParsedRequest() req: CrudRequest) {}
+  @Put('identify/:id')
+  async authorizedUser(
+    @ParsedRequest() req: CrudRequest,
+    @Param('id') userId: string,
+  ) {
+    const user = await this.repository.findOne({
+      where: { id: userId, roleId: 4 },
+    });
+    if (user) {
+      const nodemailer = require('nodemailer');
+      // create reusable transporter object using the default SMTP transport
+      let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'tdnghia1011@gmail.com', // generated ethereal user
+          pass: 'shidoo1011', // generated ethereal password
+        },
+      });
+
+      // send mail with defined transport object
+      const mailOptions = {
+        from: '"Fred Foo 👻" <tdnghia1011@gmail.com>', // sender address
+        to: user.email, // list of receivers
+        subject: 'Hello ✔', // Subject line
+        text: 'Hello world?', // plain text body
+        html: '<b> Nghĩa nè Quốc </b>', // html body
+      };
+
+      transporter.sendMail(mailOptions, function(error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
+    } else {
+      throw new UnauthorizedException('Invalid Credential');
+    }
+  }
   @Override('createManyBase')
   async createMany(
     @ParsedRequest() req: CrudRequest,

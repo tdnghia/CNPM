@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsInt, IsString } from 'class-validator';
 import { posessionEnum } from 'src/common/enums/possession.enum';
 import { enumToArray } from 'src/core/utils/helper';

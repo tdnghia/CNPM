@@ -16,6 +16,6 @@ export default class CreateRoles implements Seeder {
         },
       ])
       .execute();
-    await factory(User)({ roles: ['Member'] }).createMany(5);
+    await factory(User)({ roles: ['Member'] }).createMany(10);
   }
 }

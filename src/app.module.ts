@@ -1,4 +1,9 @@
-import { Module } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -14,8 +19,8 @@ import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { TransformInterceptor } from './interceptors/TransformInterceptor';
 import { PermissionModule } from './App/permission/permission.module';
 import { JobsModule } from './App/jobs/jobs.module';
+import { AuthorizationMiddleware } from './core/middleware/authorization.middleware';
 
-// import { PermissionController } from './permission/permission.controller';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -49,4 +54,11 @@ import { JobsModule } from './App/jobs/jobs.module';
     AppService,
   ],
 })
-export class AppModule {}
+export class AppModule {
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer.apply(AuthorizationMiddleware).forRoutes({
+  //     path: 'api/v1/categories/updateOne/:slug',
+  //     method: RequestMethod.PUT,
+  //   });
+  // }
+}
