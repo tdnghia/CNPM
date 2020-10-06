@@ -43,6 +43,7 @@ export class User extends Base {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty({ example: 'admin@gmail.com' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
   @IsString({ always: true })
@@ -57,6 +58,7 @@ export class User extends Base {
   })
   email: string;
 
+  @ApiProperty({ example: 'admin' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
   @IsString({ always: true })
@@ -77,7 +79,7 @@ export class User extends Base {
   @Column({ type: 'boolean', default: true })
   active: boolean;
 
-  @ApiProperty({ example: '3 | 4' })
+  @ApiProperty({ example: '3' })
   @IsIn([2, 3, 4])
   @Column({ type: 'int', default: 4 })
   roleId: number;
@@ -116,7 +118,7 @@ export class User extends Base {
   @OneToOne(
     type => Profile,
     profile => profile.user,
-    { cascade: true },
+    { cascade: true, eager: true },
   )
   @JoinColumn()
   profile: Profile;

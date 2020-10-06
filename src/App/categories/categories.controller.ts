@@ -7,7 +7,13 @@ import {
   Body,
   Param,
   InternalServerErrorException,
+  Req,
+  SetMetadata,
+  NotFoundException,
+  ConflictException,
+  UsePipes,
 } from '@nestjs/common';
+import { ValidationPipe } from 'src/shared/validation.pipe';
 import { Modules } from 'src/common/decorators/module.decorator';
 import { ApiTags } from '@nestjs/swagger';
 import { ModuleEnum } from 'src/common/enums/module.enum';
@@ -21,11 +27,16 @@ import {
   CrudRequest,
   ParsedBody,
   Crud,
+  CreateManyDto,
 } from '@nestjsx/crud';
-import { getSlug, slugToName } from 'src/core/utils/helper';
-import { Not, IsNull } from 'typeorm';
+import { getSlug } from 'src/core/utils/helper';
+import { Not, IsNull, UpdateResult } from 'typeorm';
 import { methodEnum } from 'src/common/enums/method.enum';
 import { Methods } from 'src/common/decorators/method.decorator';
+import { User } from 'src/common/decorators/user.decorator';
+import { UserRepository } from '../users/user.repository';
+import { LoginDTO } from '../auth/auth.dto';
+import { CateDTO } from './categoryDTO.dto';
 
 @Crud({
   model: {
@@ -40,59 +51,95 @@ import { Methods } from 'src/common/decorators/method.decorator';
   },
   query: {
     filter: [],
-    join: {},
+    join: {
+      user: {
+        eager: true,
+        allow: ['id'],
+      },
+    },
   },
 })
 @ApiTags('v1/categories')
 @Controller('/api/v1/categories')
 @Modules(ModuleEnum.CATEGORY)
+@SetMetadata('entity', ['categories'])
 export class CategoriesController extends BaseController<Category> {
   constructor(
     public service: CategoryService,
     private readonly repository: CategoryRepository,
+    private readonly authorRepository: UserRepository,
   ) {
     super(repository);
   }
 
+  @Override('createManyBase')
+  async createMany(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: CreateManyDto<Category>,
+  ) {
+    console.log('dto', dto);
+  }
   @Override('createOneBase')
+  @Methods(methodEnum.CREATE)
   async createOne(
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: Category,
+    @User() user: any,
   ) {
-    try {
-      const category = await this.repository.findOne({
-        where: { name: dto.name },
-      });
-      if (!category) {
-        dto.slug = getSlug(dto.name);
-        const data = await this.base.createOneBase(req, dto);
-        return data;
-      }
+    const author = await this.authorRepository.findOne({ id: user.users.id });
+    if (!author) {
+      throw new NotFoundException('User does not Exist');
+    }
+    dto.slug = getSlug(dto.name);
+    dto.user = author;
+    const category = await this.repository.findOne({
+      where: { name: dto.name },
+    });
+    if (!category) {
+      const data = await this.base.createOneBase(req, dto);
+      return data;
+    }
+
+    throw new ConflictException('Category name already exists');
+  }
+
+  @Get('all')
+  async getAll(@ParsedRequest() req: CrudRequest) {
+    return await this.repository.findTrees();
+  }
+
+  @Override('getManyBase')
+  @Methods(methodEnum.READ)
+  async getMany(@ParsedRequest() req: CrudRequest) {
+    return this.base.getManyBase(req);
+  }
+
+  @Override('replaceOneBase')
+  @UsePipes(new ValidationPipe())
+  async replaceOne(@ParsedRequest() req: CrudRequest) {
+    const slug = req.parsed.paramsFilter.find(
+      f => f.field === 'slug' && f.operator === '$eq',
+    ).value;
+    const data = await this.repository.findOne({
+      withDeleted: true,
+      where: { slug, deletedAt: Not(IsNull()) },
+    });
+    if (!data) {
       throw new HttpException(
         {
-          message: 'Category name already exists',
-          status: HttpStatus.CONFLICT,
+          message: 'Not Found',
+          status: HttpStatus.NOT_FOUND,
         },
-        HttpStatus.CONFLICT,
-      );
-    } catch (error) {
-      console.log('err', error);
-      throw new HttpException(
-        {
-          message: 'Internal Server error',
-          status: HttpStatus.BAD_REQUEST,
-        },
-        HttpStatus.BAD_REQUEST,
+        HttpStatus.NOT_FOUND,
       );
     }
+    return await this.repository.restore({ slug });
   }
 
   @Override('getOneBase')
   async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Category) {
     try {
-      console.log('nheree');
       const data = await this.base.getOneBase(req);
-      console.log('data', data);
 
       if (!data) {
         throw new HttpException(
@@ -117,53 +164,17 @@ export class CategoriesController extends BaseController<Category> {
     }
   }
 
-  @Put('updateOne/:slug')
-  async updateUser(
-    @Body() dto: Partial<Category>,
-    @Param('slug') slug: string,
-  ) {
-    try {
-      const result = await this.repository.findOne({ slug: slug });
-      if (!result) {
-        throw new HttpException(
-          {
-            message: 'Not Found',
-            status: HttpStatus.NOT_FOUND,
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      const category = await this.repository.findOne({ name: dto.name });
-      if (category) {
-        throw new HttpException(
-          {
-            message: 'Category name already exists',
-            status: HttpStatus.CONFLICT,
-          },
-          HttpStatus.CONFLICT,
-        );
-      }
-      dto.slug = getSlug(dto.name);
-      return await this.repository.update({ slug }, dto);
-    } catch (error) {
-      throw new HttpException(
-        {
-          message: 'Internal Server Error',
-          status: HttpStatus.BAD_REQUEST,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
-  }
-
   @Override('deleteOneBase')
-  async softDelete(@ParsedRequest() req: CrudRequest): Promise<void> {
+  @Methods(methodEnum.DELETE)
+  async softDelete(@ParsedRequest() req: CrudRequest): Promise<UpdateResult> {
     const slug = req.parsed.paramsFilter.find(
       f => f.field === 'slug' && f.operator === '$eq',
     ).value;
 
-    const data = this.repository.findOne({ where: { slug } });
+    const data = await this.repository.findOne({ where: { slug } });
     if (!data) {
+      console.log('not found');
+
       throw new HttpException(
         {
           message: 'Not Found',
@@ -173,15 +184,10 @@ export class CategoriesController extends BaseController<Category> {
       );
     }
     try {
-      await this.repository.softDelete({ slug });
+      return await this.repository.softDelete({ slug });
     } catch (error) {
       throw new InternalServerErrorException('Incomplete CrudRequest');
     }
-  }
-
-  @Get('all')
-  async getAll(@ParsedRequest() req: CrudRequest) {
-    return await this.repository.findTrees();
   }
 
   /**
@@ -203,24 +209,41 @@ export class CategoriesController extends BaseController<Category> {
   }
 
   @Override('updateOneBase')
-  async restore(@ParsedRequest() req: CrudRequest): Promise<void> {
+  @Methods(methodEnum.UPDATE)
+  async updateOne(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: Category,
+    @User() user,
+  ): Promise<UpdateResult> {
     const slug = req.parsed.paramsFilter.find(
       f => f.field === 'slug' && f.operator === '$eq',
     ).value;
-
-    const data = await this.repository.findOne({
-      withDeleted: true,
-      where: { slug, deletedAt: Not(IsNull()) },
+    const author = await this.authorRepository.findOne({
+      id: user.users.id,
     });
-    if (!data) {
+
+    const result = await this.repository.findOne({ slug: slug });
+    if (!result) {
       throw new HttpException(
         {
-          message: 'Not Found',
+          message: 'Category Not Found',
           status: HttpStatus.NOT_FOUND,
         },
         HttpStatus.NOT_FOUND,
       );
     }
-    await this.repository.restore({ slug });
+    const category = await this.repository.findOne({ name: dto.name });
+    if (category) {
+      throw new HttpException(
+        {
+          message: 'Category name already exists',
+          status: HttpStatus.CONFLICT,
+        },
+        HttpStatus.CONFLICT,
+      );
+    }
+    dto.slug = getSlug(dto.name);
+    dto.user = author;
+    return this.repository.update({ slug }, dto);
   }
 }
