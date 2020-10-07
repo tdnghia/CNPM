@@ -10,6 +10,7 @@ import {
   ManyToMany,
   JoinTable,
   Unique,
+  BeforeUpdate,
 } from 'typeorm';
 import { Base } from '../entity/base.entity';
 import {
@@ -72,14 +73,16 @@ export class User extends Base {
 
   @Exclude()
   @IsBoolean()
+  @IsOptional({ groups: [UPDATE] })
   @Column({ type: 'boolean', default: false })
   ExpiredToken: boolean;
 
   @IsBoolean()
+  @IsOptional({ groups: [CREATE] })
   @Column({ type: 'boolean', default: true })
   active: boolean;
 
-  @ApiProperty({ example: '3' })
+  @ApiProperty({ example: 3 })
   @IsIn([2, 3, 4])
   @Column({ type: 'int', default: 4 })
   roleId: number;
@@ -184,6 +187,7 @@ export class User extends Base {
    * Exec Hash Function before Insert
    */
   @BeforeInsert()
+  @BeforeUpdate()
   async hashPassword() {
     const saltRounds = 12;
     this.password = await bcrypt.hash(this.password, saltRounds);

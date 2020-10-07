@@ -49,6 +49,7 @@ export class PermissionController {
   }
 
   @Get(':role')
+  @Methods(methodEnum.READ)
   async GetAllPermissionByRole(
     @ParsedRequest() req: CrudRequest,
     @Param('role') role: string,
@@ -65,6 +66,7 @@ export class PermissionController {
 
   // @Override('createManyBase')
   @Put(':id')
+  @Methods(methodEnum.UPDATE)
   @UsePipes(new ValidationPipe())
   async updatePermission(@Param('id') id: number, @Body() data: PermissionDTO) {
     if (data.roleId == 1) {
@@ -98,12 +100,8 @@ export class PermissionController {
     );
   }
 
-  @Post()
-  async createOne(@Body() data: PermissionDTO) {
-    console.log('data', data);
-  }
-
   @Delete(':id')
+  @Methods(methodEnum.DELETE)
   async deleteOne(@Param('id') id: number, @Body() data: PermissionDTO) {
     if (data.roleId === 1) {
       throw new BadRequestException('Permission roleAdmin can not be Modified');

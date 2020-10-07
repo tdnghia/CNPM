@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UsePipes,
-  UseGuards,
-  Put,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, UsePipes, Put } from '@nestjs/common';
 import { AuthServices } from './auth.service';
 import {
   LoginDTO,
@@ -16,10 +8,15 @@ import {
 } from 'src/App/auth/auth.dto';
 import { ValidationPipe } from 'src/shared/validation.pipe';
 import { ApiTags } from '@nestjs/swagger';
-import { User } from 'src/common/decorators/user.decorator';
-import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { UserSession } from 'src/common/decorators/user.decorator';
+import { Methods } from 'src/common/decorators/method.decorator';
+import { methodEnum } from 'src/common/enums/method.enum';
+import { Modules } from 'src/common/decorators/module.decorator';
+import { ModuleEnum } from 'src/common/enums/module.enum';
+
 @ApiTags('v1/auth')
 @Controller('api/v1/auth')
+@Modules(ModuleEnum.PROFILE)
 export class AuthController {
   constructor(private authService: AuthServices) {}
 
@@ -49,12 +46,18 @@ export class AuthController {
   }
 
   @Put('me/password')
-  @UseGuards(JwtAuthGuard)
-  async changePwd(@Body() body: ChangePwdDTO, @User() user) {
+  @Methods(methodEnum.UPDATE)
+  @UsePipes(new ValidationPipe())
+  async changePwd(@Body() body: ChangePwdDTO, @UserSession() user) {
     return this.authService.changePwd(user, body);
   }
+
   @Get('me')
-  async getProfile() {}
+  @Methods(methodEnum.READ)
+  async getProfile(@UserSession() user: any) {
+    const { id } = user.users;
+    return await this.authService.getProfile(id);
+  }
 
   @Post('forgot-password')
   async forgotPassword() {}

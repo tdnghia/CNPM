@@ -1,18 +1,16 @@
 import {
   Controller,
-  Response,
   HttpStatus,
   HttpException,
   Param,
-  HttpCode,
   InternalServerErrorException,
   Get,
-  UseGuards,
   Put,
-  Body,
-  BadRequestException,
-  ConflictException,
   UnauthorizedException,
+  UsePipes,
+  NotFoundException,
+  SetMetadata,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   CrudRequest,
@@ -30,7 +28,7 @@ import { BaseController } from 'src/common/Base/base.controller';
 import { Not, IsNull } from 'typeorm';
 import { Modules } from 'src/common/decorators/module.decorator';
 import { Methods } from 'src/common/decorators/method.decorator';
-
+import { ValidationPipe } from 'src/shared/validation.pipe';
 import {
   ApiOkResponse,
   ApiUnauthorizedResponse,
@@ -39,6 +37,9 @@ import {
 import { methodEnum } from 'src/common/enums/method.enum';
 import { ModuleEnum } from 'src/common/enums/module.enum';
 import nodemailer from 'nodemailer';
+import * as bcrypt from 'bcrypt';
+import * as _ from 'lodash';
+import { UserSession } from 'src/common/decorators/user.decorator';
 
 @Crud({
   model: {
@@ -48,11 +49,6 @@ import nodemailer from 'nodemailer';
     id: {
       field: 'id',
       type: 'uuid',
-      primary: true,
-    },
-    name: {
-      field: 'name',
-      type: 'string',
       primary: true,
     },
   },
@@ -77,6 +73,7 @@ import nodemailer from 'nodemailer';
 @ApiTags('v1/users')
 @Controller('/api/v1/users')
 @Modules(ModuleEnum.USER)
+@SetMetadata('entity', ['users'])
 export class UserController extends BaseController<User> {
   constructor(
     public service: UserService,
@@ -92,59 +89,50 @@ export class UserController extends BaseController<User> {
   @Override('getManyBase')
   @Methods(methodEnum.READ)
   async getAll(@ParsedRequest() req: CrudRequest) {
-    // req.parsed.search.$and = [{ isActive: { $eq: true } }];
-    console.log('req', req);
-
     return await this.base.getManyBase(req);
   }
 
   @Override('deleteOneBase')
-  async softDelete(@ParsedRequest() req: CrudRequest): Promise<void> {
+  @Methods(methodEnum.DELETE)
+  async softDelete(@ParsedRequest() req: CrudRequest) {
     const id = req.parsed.paramsFilter.find(
       f => f.field === 'id' && f.operator === '$eq',
     ).value;
 
     const data = this.repository.findOne({ where: { id } });
     if (!data) {
-      throw new HttpException(
-        {
-          message: 'Not Found',
-          status: HttpStatus.NOT_FOUND,
-        },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundException('User not found');
     }
     try {
       await this.repository.softDelete({ id });
+      return { status: true };
     } catch (error) {
-      throw new InternalServerErrorException('Incomplete CrudRequest');
+      throw new InternalServerErrorException('Incomplete CrudRequest', error);
     }
   }
 
-  @Override('updateOneBase')
-  async restore(@ParsedRequest() req: CrudRequest): Promise<void> {
-    const id = req.parsed.paramsFilter.find(
-      f => f.field === 'id' && f.operator === '$eq',
-    ).value;
-
+  @Put('restore/:id')
+  @Methods(methodEnum.UPDATE)
+  async restore(@Param('id') id: string) {
     const data = await this.repository.findOne({
       withDeleted: true,
-      where: { id, deletedAt: Not(IsNull()) },
+      where: { id, deletedat: Not(IsNull()) },
     });
     if (!data) {
-      throw new HttpException(
-        {
-          message: 'Not Found',
-          status: HttpStatus.NOT_FOUND,
-        },
-        HttpStatus.NOT_FOUND,
-      );
+      throw new NotFoundException('User not Found');
     }
-    await this.repository.restore({ id });
+    try {
+      return this.repository.restore({ id });
+    } catch (error) {
+      console.log('err', error);
+      throw new InternalServerErrorException('Internal server error');
+    }
   }
   @Override('createOneBase')
   @ApiOkResponse({ description: 'User login' })
   @ApiUnauthorizedResponse({ description: 'Invalid credential' })
+  @UsePipes(new ValidationPipe())
+  @Methods(methodEnum.CREATE)
   async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: User) {
     try {
       const data = await this.base.createOneBase(req, dto);
@@ -172,25 +160,90 @@ export class UserController extends BaseController<User> {
     }
   }
 
+  @Override('replaceOneBase')
+  @Methods(methodEnum.UPDATE)
+  @UsePipes(new ValidationPipe())
+  async replaceOne(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: User,
+    @UserSession() userSession: any,
+  ) {
+    const id = req.parsed.paramsFilter.find(
+      f => f.field === 'id' && f.operator === '$eq',
+    ).value;
+
+    const user = await this.repository.findOne({
+      id,
+    });
+    if (!user) {
+      throw new NotFoundException('User not Found');
+    }
+
+    if (user.roleId === 1 && dto.roleId !== 1) {
+      throw new BadRequestException('Role Admin can not be modified');
+    }
+    if (dto.roleId !== user.roleId) {
+      dto.ExpiredToken = true;
+    }
+    try {
+      await this.repository.update(
+        { id },
+        { ...dto, password: await bcrypt.hash(dto.password, 12) },
+      );
+      return { status: true };
+    } catch (error) {
+      throw new InternalServerErrorException('Internal Server Error');
+    }
+  }
+
   @Get('inActive/:id')
-  async Inactive(@ParsedRequest() req: CrudRequest): Promise<void> {
+  @Methods(methodEnum.READ)
+  async Inactive(@ParsedRequest() req: CrudRequest) {
     try {
       const deletedUser = await this.repository.find({
         withDeleted: true,
         where: { deletedAt: Not(IsNull()) },
       });
-      console.log(deletedUser);
-
-      // const data = this.repository.findOne({ where: { id } });
-      // console.log(data);
+      return deletedUser;
     } catch (error) {
       //console.log(error);
       console.log('error', error);
     }
   }
 
+  @Override('updateOneBase')
+  @Methods(methodEnum.UPDATE)
+  @UsePipes(new ValidationPipe())
+  async updateOne(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: Partial<User>,
+  ) {
+    const id = req.parsed.paramsFilter.find(
+      f => f.field === 'id' && f.operator === '$eq',
+    ).value;
+    const user = await this.repository.findOne({ id });
+
+    const props: any = [];
+    for (const [key, value] of Object.entries(user)) {
+      props.push(key);
+    }
+
+    for (const [key, value] of Object.entries(dto)) {
+      if (_.includes(props, key)) {
+        user[`${key}`] = value;
+      }
+    }
+    try {
+      await this.repository.update({ id }, {});
+      return { status: true };
+    } catch (error) {
+      throw new InternalServerErrorException('Internal Server Error');
+    }
+  }
+
   /** Get All user Inactive status */
   @Get('inactive')
+  @Methods(methodEnum.READ)
   async getInactive(@ParsedRequest() req: CrudRequest) {
     try {
       const data = this.repository.find({
@@ -199,7 +252,7 @@ export class UserController extends BaseController<User> {
           deletedAt: Not(IsNull()),
         },
         relations: ['role'],
-        select: ['id', 'email', 'createdAt', 'role'],
+        select: ['id', 'email', 'createdat', 'role'],
       });
       return data;
     } catch (error) {
@@ -241,6 +294,7 @@ export class UserController extends BaseController<User> {
     return password;
   }
   @Get('unauthorized')
+  @Methods(methodEnum.READ)
   async getUnAuthorized(@ParsedRequest() req: CrudRequest) {
     try {
       const data = this.repository.find({
@@ -248,7 +302,7 @@ export class UserController extends BaseController<User> {
           active: false,
         },
         relations: ['role'],
-        select: ['id', 'email', 'createdAt', 'role'],
+        select: ['id', 'email', 'createdat', 'role'],
       });
       return data;
     } catch (error) {
@@ -257,6 +311,7 @@ export class UserController extends BaseController<User> {
   }
 
   @Put('identify/:id')
+  @Methods(methodEnum.UPDATE)
   async authorizedUser(
     @ParsedRequest() req: CrudRequest,
     @Param('id') userId: string,
@@ -265,9 +320,8 @@ export class UserController extends BaseController<User> {
       where: { id: userId, roleId: 4 },
     });
     if (user) {
-      const nodemailer = require('nodemailer');
       // create reusable transporter object using the default SMTP transport
-      let transporter = nodemailer.createTransport({
+      const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
           user: 'tdnghia1011@gmail.com', // generated ethereal user
@@ -324,6 +378,7 @@ export class UserController extends BaseController<User> {
     }
   }
   @Override('getOneBase')
+  @Methods(methodEnum.READ)
   async getOne(@ParsedRequest() req: CrudRequest, @ParsedRequest() dto: User) {
     try {
       const data = await this.base.getOneBase(req);
@@ -335,30 +390,6 @@ export class UserController extends BaseController<User> {
           error: HttpStatus.NOT_FOUND,
         },
         HttpStatus.NOT_FOUND,
-      );
-    }
-  }
-  @Put('updateOne/:id')
-  async updateUser(@Body() dto: Partial<User>, @Param('id') id: string) {
-    try {
-      const result = await this.repository.findOne({ id });
-      if (!result) {
-        throw new HttpException(
-          {
-            message: 'Not Found',
-            status: HttpStatus.NOT_FOUND,
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      return await this.repository.update({ id }, dto);
-    } catch (error) {
-      throw new HttpException(
-        {
-          message: 'Internal Server Error',
-          status: HttpStatus.BAD_REQUEST,
-        },
-        HttpStatus.BAD_REQUEST,
       );
     }
   }

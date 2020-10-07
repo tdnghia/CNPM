@@ -1,6 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { getManager } from 'typeorm';
+import { getManager, Connection } from 'typeorm';
 import { Category } from 'src/entity/category.entity';
 import * as _ from 'lodash';
 import { methodEnum } from 'src/common/enums/method.enum';
