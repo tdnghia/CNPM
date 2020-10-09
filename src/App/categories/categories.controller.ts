@@ -3,11 +3,8 @@ import {
   HttpException,
   HttpStatus,
   Get,
-  Put,
-  Body,
   Param,
   InternalServerErrorException,
-  Req,
   SetMetadata,
   NotFoundException,
   ConflictException,
@@ -33,7 +30,7 @@ import { getSlug } from 'src/core/utils/helper';
 import { Not, IsNull, UpdateResult } from 'typeorm';
 import { methodEnum } from 'src/common/enums/method.enum';
 import { Methods } from 'src/common/decorators/method.decorator';
-import { User } from 'src/common/decorators/user.decorator';
+import { UserSession } from 'src/common/decorators/user.decorator';
 import { UserRepository } from '../users/user.repository';
 import { LoginDTO } from '../auth/auth.dto';
 import { CateDTO } from './categoryDTO.dto';
@@ -73,18 +70,19 @@ export class CategoriesController extends BaseController<Category> {
   }
 
   @Override('createManyBase')
+  @Methods(methodEnum.CREATE)
   async createMany(
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: CreateManyDto<Category>,
   ) {
-    console.log('dto', dto);
+    return await this.base.createManyBase(req, dto);
   }
   @Override('createOneBase')
   @Methods(methodEnum.CREATE)
   async createOne(
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: Category,
-    @User() user: any,
+    @UserSession() user: any,
   ) {
     const author = await this.authorRepository.findOne({ id: user.users.id });
     if (!author) {
@@ -115,6 +113,7 @@ export class CategoriesController extends BaseController<Category> {
   }
 
   @Override('replaceOneBase')
+  @Methods(methodEnum.UPDATE)
   @UsePipes(new ValidationPipe())
   async replaceOne(@ParsedRequest() req: CrudRequest) {
     const slug = req.parsed.paramsFilter.find(
@@ -135,6 +134,23 @@ export class CategoriesController extends BaseController<Category> {
     }
     return await this.repository.restore({ slug });
   }
+  /**
+   * Get Category By Id
+   * @param req
+   * @param dto
+   * @param id
+   */
+  @Get('getone/:id')
+  async getCategory(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: Category,
+    @Param('id') id: number,
+  ) {
+    return await this.repository.findOne({
+      where: { id },
+      relations: ['children'],
+    });
+  }
 
   @Override('getOneBase')
   async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Category) {
@@ -152,8 +168,6 @@ export class CategoriesController extends BaseController<Category> {
       }
       return data;
     } catch (error) {
-      console.log('error', error);
-
       throw new HttpException(
         {
           message: 'Category not found',
@@ -190,30 +204,12 @@ export class CategoriesController extends BaseController<Category> {
     }
   }
 
-  /**
-   * Get Category By Id
-   * @param req
-   * @param dto
-   * @param id
-   */
-  @Get(':id')
-  async getCategory(
-    @ParsedRequest() req: CrudRequest,
-    @ParsedBody() dto: Category,
-    @Param('id') id: number,
-  ) {
-    return await this.repository.findOne({
-      where: { id },
-      relations: ['children'],
-    });
-  }
-
   @Override('updateOneBase')
   @Methods(methodEnum.UPDATE)
   async updateOne(
     @ParsedRequest() req: CrudRequest,
     @ParsedBody() dto: Category,
-    @User() user,
+    @UserSession() user,
   ): Promise<UpdateResult> {
     const slug = req.parsed.paramsFilter.find(
       f => f.field === 'slug' && f.operator === '$eq',

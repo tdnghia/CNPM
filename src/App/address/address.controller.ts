@@ -5,7 +5,7 @@ import { Address } from 'src/entity/address.entity';
 import { AddressService } from './address.service';
 import { AddressRepository } from './address.repository';
 import { Crud, Override, ParsedBody } from '@nestjsx/crud';
-import { User } from 'src/common/decorators/user.decorator';
+import { UserSession } from 'src/common/decorators/user.decorator';
 import { UserRepository } from '../users/user.repository';
 
 @Crud({
@@ -36,7 +36,7 @@ export class AddressController extends BaseController<Address> {
     super(repository);
   }
   @Override('createOneBase')
-  async createOne(@User() currentUser, @ParsedBody() body: Address) {
+  async createOne(@UserSession() currentUser, @ParsedBody() body: Address) {
     const user = await this.userRepository.findOne({
       where: { id: currentUser.users.id },
     });
@@ -46,7 +46,7 @@ export class AddressController extends BaseController<Address> {
     return result;
   }
   @Override('getManyBase')
-  async getMany(@User() currentUser) {
+  async getMany(@UserSession() currentUser) {
     const result = await this.userRepository.find({
       where: { id: currentUser.users.id },
       relations: ['addresses'],

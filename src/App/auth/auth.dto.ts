@@ -107,4 +107,9 @@ export class ChangePwdDTO {
   })
   @IsString()
   password: string;
+
+  @ApiProperty({ example: 'admin' })
+  @IsString({ always: true })
+  @Match('password', { message: 'Password does not match' })
+  confirmPassword: string;
 }

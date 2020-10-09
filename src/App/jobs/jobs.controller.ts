@@ -173,7 +173,7 @@ export class JobsController extends BaseController<Job> {
       );
     }
     try {
-      await this.repository.delete({ slug, deletedAt: IsNull() });
+      await this.repository.delete({ slug, deletedat: IsNull() });
     } catch (error) {
       throw new InternalServerErrorException('Incomplete CrudRequest');
     }

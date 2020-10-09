@@ -41,6 +41,23 @@ export class AuthServices {
     }
   }
 
+  async getProfile(id: string): Promise<User> {
+    const user = await this.userRepository.findOne({
+      where: { id },
+      relations: ['profile', 'educations'],
+      select: ['email', 'id', 'role', 'roleId', 'createdat', 'updatedat'],
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
+  }
+
+  // private toResponseObject(user: User) {
+  //   const {email,updatedAt, deletedAt, createdAt,educations,profile}:any = user
+
+  //   return ;
+  // }
   async login(data: LoginDTO) {
     try {
       const user: User = await this.validateUser(data);
@@ -131,6 +148,8 @@ export class AuthServices {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+
+    console.log('user', userByEmail);
 
     if (
       !userByEmail ||
