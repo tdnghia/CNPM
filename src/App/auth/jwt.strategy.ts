@@ -24,11 +24,13 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: any, done: VerifiedCallback) {
+    console.log('payload', payload);
+
     const currentUser = await this.userRepository.findOne({
       where: { id: payload.id },
     });
 
-    if (currentUser.ExpiredToken) {
+    if (currentUser && currentUser.ExpiredToken) {
       throw new UnauthorizedException('Session has expired! Try login Again');
     }
     const permissionRole = [];
