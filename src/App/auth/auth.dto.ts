@@ -70,7 +70,7 @@ export class RegisterDTO {
 export class EmployersDTO {
   @ApiProperty({ example: 'Company Name' })
   @IsString({ always: true })
-  companyName: string;
+  name: string;
 
   @ApiProperty({ example: 'http://www.careernetwork.com' })
   @IsOptional({groups: [CREATE]})
