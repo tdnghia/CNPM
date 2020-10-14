@@ -9,6 +9,7 @@ import {
   NotFoundException,
   ConflictException,
   UsePipes,
+  UseGuards,
 } from '@nestjs/common';
 import { ValidationPipe } from 'src/shared/validation.pipe';
 import { Modules } from 'src/common/decorators/module.decorator';
@@ -34,6 +35,7 @@ import { UserSession } from 'src/common/decorators/user.decorator';
 import { UserRepository } from '../users/user.repository';
 import { LoginDTO } from '../auth/auth.dto';
 import { CateDTO } from './categoryDTO.dto';
+import { PossessionGuard } from 'src/guards/posessionHandle.guard';
 
 @Crud({
   model: {
@@ -114,6 +116,7 @@ export class CategoriesController extends BaseController<Category> {
 
   @Override('replaceOneBase')
   @Methods(methodEnum.UPDATE)
+  @UseGuards(PossessionGuard)
   @UsePipes(new ValidationPipe())
   async replaceOne(@ParsedRequest() req: CrudRequest) {
     const slug = req.parsed.paramsFilter.find(

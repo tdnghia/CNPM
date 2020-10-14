@@ -76,6 +76,8 @@ export class AuthServices {
         token: await this.signPayload(payload),
         id: user.id,
         email: user.email,
+        avatar: user.profile.profileUrl,
+        name: user.profile.name,
         role: user.role.role,
         roleId: user.roleId
       };
@@ -110,18 +112,20 @@ export class AuthServices {
 
   async addLead(dto: EmployersDTO) {
     try {
-      const data = this.userRepository.create({
-        roleId: 3,
+      const data: User = this.userRepository.create({
+        roleId: 4,
         email: dto.email,
         active: false,
         password: 'default',
         profile: {
           phone: dto.phone,
           pageURL: dto.website,
-          name: dto.companyName,
+          name: dto.name,
         },
       });
-      return await this.userRepository.save(data);
+      await this.userRepository.save(data);
+      const {email, id, role, roleId, profile, createdat, updatedat} = data
+      return {email, id, role, roleId, profile, createdat, updatedat};
     } catch (error) {
       if (error.code == '23505') {
         throw new HttpException(
@@ -132,8 +136,6 @@ export class AuthServices {
           HttpStatus.CONFLICT,
         );
       }
-      console.log('error', error);
-
       throw new InternalServerErrorException('Internal Server Error');
     }
   }
