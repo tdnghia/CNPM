@@ -76,8 +76,7 @@ export class AuthServices {
         token: await this.signPayload(payload),
         id: user.id,
         email: user.email,
-        avatar: user.profile.profileUrl,
-        name: user.profile.name,
+        profile: user.profile,
         role: user.role.role,
         roleId: user.roleId
       };
