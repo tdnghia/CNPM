@@ -187,7 +187,7 @@ export class User extends Base {
    * Exec Hash Function before Insert
    */
   @BeforeInsert()
-  @BeforeUpdate()
+  // @BeforeUpdate()
   async hashPassword() {
     const saltRounds = 12;
     this.password = await bcrypt.hash(this.password, saltRounds);
