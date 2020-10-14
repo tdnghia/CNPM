@@ -155,8 +155,6 @@ export class AuthServices {
       );
     }
 
-    console.log('user', userByEmail);
-
     if (
       !userByEmail ||
       !(await this.comparePassword(payload.password, userByEmail.password))
