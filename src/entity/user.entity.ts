@@ -84,7 +84,7 @@ export class User extends Base {
 
   @ApiProperty({ example: 3 })
   @IsIn([2, 3, 4])
-  @Column({ type: 'int', default: 4 })
+  @Column({ type: 'int', default: 3 })
   roleId: number;
 
   /**

@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../../entity/user.entity';
@@ -61,6 +62,9 @@ export class AuthServices {
   async login(data: LoginDTO) {
     try {
       const user: User = await this.validateUser(data);
+      if(!user.active) {
+        throw new UnauthorizedException('User is Unauthorized')
+      }
       user.ExpiredToken = false;
       this.userRepository.save(user);
       const payload: Payload = {
@@ -73,6 +77,7 @@ export class AuthServices {
         id: user.id,
         email: user.email,
         role: user.role.role,
+        roleId: user.roleId
       };
     } catch (error) {
       throw error;
@@ -87,7 +92,8 @@ export class AuthServices {
       const data = this.userRepository.create({
         ...dto,
       });
-      return await this.userRepository.save(data);
+       await this.userRepository.save(data);
+       return this.login({password: dto.password, email: dto.email});
     } catch (error) {
       if (error.code == '23505') {
         throw new HttpException(
