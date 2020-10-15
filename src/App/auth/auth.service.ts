@@ -5,6 +5,7 @@ import {
   InternalServerErrorException,
   NotFoundException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../../entity/user.entity';
@@ -61,6 +62,9 @@ export class AuthServices {
   async login(data: LoginDTO) {
     try {
       const user: User = await this.validateUser(data);
+      if(!user.active) {
+        throw new UnauthorizedException('User is Unauthorized')
+      }
       user.ExpiredToken = false;
       this.userRepository.save(user);
       const payload: Payload = {
@@ -72,7 +76,9 @@ export class AuthServices {
         token: await this.signPayload(payload),
         id: user.id,
         email: user.email,
+        profile: user.profile,
         role: user.role.role,
+        roleId: user.roleId
       };
     } catch (error) {
       throw error;
@@ -87,7 +93,8 @@ export class AuthServices {
       const data = this.userRepository.create({
         ...dto,
       });
-      return await this.userRepository.save(data);
+       await this.userRepository.save(data);
+       return this.login({password: dto.password, email: dto.email});
     } catch (error) {
       if (error.code == '23505') {
         throw new HttpException(
@@ -104,18 +111,20 @@ export class AuthServices {
 
   async addLead(dto: EmployersDTO) {
     try {
-      const data = this.userRepository.create({
-        roleId: 3,
+      const data: User = this.userRepository.create({
+        roleId: 4,
         email: dto.email,
         active: false,
         password: 'default',
         profile: {
           phone: dto.phone,
           pageURL: dto.website,
-          name: dto.companyName,
+          name: dto.name,
         },
       });
-      return await this.userRepository.save(data);
+      await this.userRepository.save(data);
+      const {email, id, role, roleId, profile, createdat, updatedat} = data
+      return {email, id, role, roleId, profile, createdat, updatedat};
     } catch (error) {
       if (error.code == '23505') {
         throw new HttpException(
@@ -126,8 +135,6 @@ export class AuthServices {
           HttpStatus.CONFLICT,
         );
       }
-      console.log('error', error);
-
       throw new InternalServerErrorException('Internal Server Error');
     }
   }
@@ -148,8 +155,6 @@ export class AuthServices {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    console.log('user', userByEmail);
 
     if (
       !userByEmail ||

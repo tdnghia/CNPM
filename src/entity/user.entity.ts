@@ -84,7 +84,7 @@ export class User extends Base {
 
   @ApiProperty({ example: 3 })
   @IsIn([2, 3, 4])
-  @Column({ type: 'int', default: 4 })
+  @Column({ type: 'int', default: 3 })
   roleId: number;
 
   /**
@@ -187,7 +187,7 @@ export class User extends Base {
    * Exec Hash Function before Insert
    */
   @BeforeInsert()
-  @BeforeUpdate()
+  // @BeforeUpdate()
   async hashPassword() {
     const saltRounds = 12;
     this.password = await bcrypt.hash(this.password, saltRounds);
