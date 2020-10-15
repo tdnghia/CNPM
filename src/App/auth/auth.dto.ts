@@ -7,6 +7,7 @@ import {
   IsDateString,
   MinLength,
   IsOptional,
+  IsInt,
 } from 'class-validator';
 import { Match } from 'src/Helper/validation/match.decorator';
 import { CrudValidationGroups } from '@nestjsx/crud';
@@ -77,9 +78,8 @@ export class EmployersDTO {
   @IsString({ always: true })
   website: string;
 
-  @ApiProperty({ example: 'Da Nang' })
-  @IsString({ always: true })
-  city: string;
+  @ApiProperty({ example: [32,31] })
+  city: Array<number>;
 
   @ApiProperty({ example: 'admin@gmail.com' })
   @IsString({ always: true })

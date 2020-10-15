@@ -7,8 +7,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
   const options = new DocumentBuilder()
-    .setTitle('BookShop API Documentation')
-    .setDescription('The BookShop API Documentation description')
+    .setTitle('The Career Network API Documentation')
+    .setDescription('The Career Network API Documentation description')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

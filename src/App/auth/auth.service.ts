@@ -16,6 +16,8 @@ import * as bcrypt from 'bcrypt';
 import { LoginDTO, RegisterDTO, ChangePwdDTO, EmployersDTO } from './auth.dto';
 import { sign } from 'jsonwebtoken';
 import { Payload } from 'src/types/payload';
+import axios from 'axios';
+import { AddressRepository } from '../address/address.repository';
 
 @Injectable()
 export class AuthServices {
@@ -23,6 +25,7 @@ export class AuthServices {
     private userRepository: UserRepository,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    private addressRepository: AddressRepository,
   ) {}
 
   async getRolesPermission(role: string) {
@@ -111,6 +114,24 @@ export class AuthServices {
 
   async addLead(dto: EmployersDTO) {
     try {
+      const cityArr = [];
+      const provinces = await await axios.get(
+        'https://vapi.vnappmob.com/api/province',
+      );
+      console.log('provine', provinces.data.results);
+      // console.log('dto', typeof dto.city);
+      
+      Object.keys(dto.city).forEach(key => {
+        const index = provinces.data.results.map(data=>data.province_id).indexOf(`${dto.city[key]}`);
+        if(index<0) { 
+             throw new BadRequestException('Invalid City');
+           }
+           cityArr.push({city: dto.city[key]});
+      })
+
+      // const createAddress = this.addressRepository.create(cityArr);
+      // await this.addressRepository.save(createAddress);
+
       const data: User = this.userRepository.create({
         roleId: 4,
         email: dto.email,
@@ -121,11 +142,16 @@ export class AuthServices {
           pageURL: dto.website,
           name: dto.name,
         },
+        // address: createAddress,
       });
       await this.userRepository.save(data);
       const {email, id, role, roleId, profile, createdat, updatedat} = data
       return {email, id, role, roleId, profile, createdat, updatedat};
     } catch (error) {
+      console.log('err', error);
+      if(error.status == 400) {
+        throw error;
+      }
       if (error.code == '23505') {
         throw new HttpException(
           {
