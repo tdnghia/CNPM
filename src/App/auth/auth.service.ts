@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../../entity/user.entity';
-import { Repository } from 'typeorm';
+import { DeepPartial, getManager, Repository } from 'typeorm';
 import { Role } from 'src/entity/role.entity';
 import { UserRepository } from 'src/App/users/user.repository';
 import * as bcrypt from 'bcrypt';
@@ -18,6 +18,7 @@ import { sign } from 'jsonwebtoken';
 import { Payload } from 'src/types/payload';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
+import { Address } from 'src/entity/address.entity';
 
 @Injectable()
 export class AuthServices {
@@ -114,10 +115,13 @@ export class AuthServices {
 
   async addLead(dto: EmployersDTO) {
     try {
+    const manager = getManager();
       const cityArr = [];
       const provinces = await await axios.get(
         'https://vapi.vnappmob.com/api/province',
       );
+      let query = '(';
+
       console.log('provine', provinces.data.results);
       // console.log('dto', typeof dto.city);
       
@@ -129,10 +133,17 @@ export class AuthServices {
            cityArr.push({city: dto.city[key]});
       })
 
-      // const createAddress = this.addressRepository.create(cityArr);
-      // await this.addressRepository.save(createAddress);
+      const createAddress = await this.addressRepository.create(cityArr);
+      await this.addressRepository.save(createAddress);
+      
 
-      const data: User = this.userRepository.create({
+      createAddress.forEach(addr => {
+          query += "'" + addr.id + "',";
+      })
+      query = query.slice(0, -1) + ')';
+      
+      const findAddress = await manager.query(`SELECT * FROM ${this.addressRepository.metadata.tableName} WHERE id in ${query} `)
+      const data = this.userRepository.create({
         roleId: 4,
         email: dto.email,
         active: false,
@@ -142,13 +153,12 @@ export class AuthServices {
           pageURL: dto.website,
           name: dto.name,
         },
-        // address: createAddress,
+        address: findAddress,
       });
       await this.userRepository.save(data);
       const {email, id, role, roleId, profile, createdat, updatedat} = data
       return {email, id, role, roleId, profile, createdat, updatedat};
     } catch (error) {
-      console.log('err', error);
       if(error.status == 400) {
         throw error;
       }
