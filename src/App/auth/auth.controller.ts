@@ -61,6 +61,10 @@ export class AuthController {
     return await this.authService.getProfile(id);
   }
 
+  // @Put('me')
+  // @Methods(methodEnum.UPDATE)
+  // async update
+
   @Post('forgot-password')
   async forgotPassword() {}
 }

@@ -17,18 +17,17 @@ export class Address extends Base {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiProperty({ example: 'Đà Nẵng' })
+  @ApiProperty({ example: '1' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
-  @IsString({ always: true })
-  @Column({ type: 'text' })
+  @Column({ type: 'int' })
   city: string;
 
   @ApiProperty({ example: ' ' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
   @IsString({ always: true })
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   description: string;
 
   @IsOptional({ groups: [UPDATE, CREATE] })

@@ -9,6 +9,7 @@ import axios from 'axios';
 import slugify from 'slugify';
 import * as Faker from 'faker';
 import { Profile } from '../../entity/profile.entity';
+import { take } from 'lodash';
 
 export default class CompanySeeder implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
@@ -61,6 +62,14 @@ export default class CompanySeeder implements Seeder {
           const lastName = Faker.name.lastName();
           const email = Faker.internet.email(firstName, lastName);
 
+           await factory(Address)({
+            payload: {
+              city: provinces.data.results[track].province_id,
+              description: companyProfile[index].address,
+            },
+          }).create();
+
+          const findAddress = await addressRepository.findOne({order: {createdat: 'DESC'}});
           await getConnection()
             .createQueryBuilder()
             .insert()
@@ -71,17 +80,13 @@ export default class CompanySeeder implements Seeder {
                 password: await bcrypt.hash('admin', 12),
                 roleId: 4,
                 profile,
+                address: findAddress,
               },
             ])
             .execute();
           // const company = await factory(User)({ roles: ['Member'] }).create();
 
-          await factory(Address)({
-            payload: {
-              city: provinces.data.results[track].province_id,
-              description: companyProfile[index].address,
-            },
-          }).create();
+         
         }
       }
     }
