@@ -184,6 +184,14 @@ export class User extends Base {
   jobs: Job[];
 
   /**
+   * A user can have many favorites books
+   */
+  @ManyToMany(
+    type => Job,
+    job => job.favoriteBy,
+  )
+  favorites: Job[];
+  /**
    * Exec Hash Function before Insert
    */
   @BeforeInsert()

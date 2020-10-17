@@ -31,8 +31,8 @@ import { Address } from './address.entity';
 const { CREATE, UPDATE } = CrudValidationGroups;
 @Entity('jobs')
 export class Job extends Base {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
@@ -129,7 +129,7 @@ export class Job extends Base {
   category: Category;
 
   /**
-   * The relatinship between Job and address
+   * The relationship between Job and address
    */
 
   @ManyToOne(
@@ -137,4 +137,25 @@ export class Job extends Base {
     address => address.jobs,
   )
   address: Address;
+
+  /**
+   * Favorites Job
+   */
+
+  @ManyToMany(
+    type => User,
+    user => user.favorites,
+  )
+  @JoinTable({
+    name: 'job_favorite',
+    joinColumn: {
+      name: 'jobId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'userId',
+      referencedColumnName: 'id',
+    },
+  })
+  favoriteBy: User[];
 }
