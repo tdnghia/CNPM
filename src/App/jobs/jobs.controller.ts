@@ -24,8 +24,10 @@ import {
   ParsedRequest,
 } from '@nestjsx/crud';
 import { BaseController } from 'src/common/Base/base.controller';
+import { Methods } from 'src/common/decorators/method.decorator';
 import { Modules } from 'src/common/decorators/module.decorator';
 import { UserSession } from 'src/common/decorators/user.decorator';
+import { methodEnum } from 'src/common/enums/method.enum';
 import { ModuleEnum } from 'src/common/enums/module.enum';
 import { getSlug } from 'src/core/utils/helper';
 import { Job } from 'src/entity/job.entity';
@@ -71,13 +73,13 @@ export class JobsController extends BaseController<Job> {
   }
 
   @Override('createOneBase')
+  @Methods(methodEnum.CREATE)
   async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
     try {
       dto.slug = getSlug(dto.name);
       const data = await this.base.createOneBase(req, dto);
       return data;
     } catch (error) {
-      console.log('err', error);
       throw new HttpException(
         {
           message: 'Internal Server error',
@@ -105,6 +107,12 @@ export class JobsController extends BaseController<Job> {
     return this.service.getFavoritesByUser(userId);
   }
 
+  @Get('applied')
+  @Methods(methodEnum.READ)
+  async getAppliedJobByCompany(@UserSession() user: any) {
+    const userId = user.users.id;
+    return this.service.getJobAppliedByCompany(userId);
+  }
   @Override('getOneBase')
   async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
     try {
@@ -224,5 +232,13 @@ export class JobsController extends BaseController<Job> {
   async favoritesJob(@Param('id') id: string, @UserSession() user) {
     const userId = user.users.id;
     return this.service.addFavoritesJob(id, userId);
+  }
+
+  @Post('/:id/applies')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async appliesJOb(@Param('id') id: string, @UserSession() user) {
+    const userId = user.users.id;
+    return this.service.appliesJob(id, userId);
   }
 }

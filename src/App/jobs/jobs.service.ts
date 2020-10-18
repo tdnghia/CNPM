@@ -1,4 +1,5 @@
 import {
+  ConflictException,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -64,5 +65,48 @@ export class JobService extends TypeOrmCrudService<Job> {
     const jobIds = favoritesJob.map(job => job.jobId);
     const jobByIds = await this.repository.findByIds(jobIds);
     console.log('job by ids', jobByIds);
+  }
+
+  async appliesJob(jobId: string, userId: string) {
+    this.tableName = 'job_applied';
+    const manager = getManager();
+    const job = await this.repository.findOne({ where: { id: jobId } });
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!job) {
+      throw new NotFoundException(`Job not found`);
+    }
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    try {
+      const jobApplied = await manager.query(
+        `SELECT * FROM ${this.tableName} WHERE "jobId"='${jobId}' and "userId"='${userId}'`,
+      );
+
+      if (jobApplied.length == 0) {
+        await manager.query(
+          `INSERT INTO ${this.tableName} values('${jobId}','${userId}')`,
+        );
+        return { status: true };
+      } else {
+        throw new ConflictException('Job has been already applied');
+      }
+    } catch (error) {
+      if (error.response.statusCode === 409) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        `Internal Server Error Exception ${error}`,
+      );
+    }
+  }
+
+  async getJobAppliedByCompany(userId: string) {
+    const user = await this.userRepository.findOne({ id: userId });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    const jobApplied = await this.repository.find({ where: { user } });
+    console.log('jobApplied', jobApplied);
   }
 }

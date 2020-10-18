@@ -134,6 +134,7 @@ export class User extends Base {
     address => address.user,
   )
   @JoinTable({
+    name: 'user_address',
     joinColumn: {
       name: 'userId',
       referencedColumnName: 'id',
@@ -143,7 +144,7 @@ export class User extends Base {
       referencedColumnName: 'id',
     },
   })
-  address: Address;
+  address: Address[];
 
   /**
    * The relation between User and tag
@@ -191,6 +192,15 @@ export class User extends Base {
     job => job.favoriteBy,
   )
   favorites: Job[];
+
+  /**
+   * A user can apply many jobs
+   */
+  @ManyToMany(
+    type => Job,
+    job => job.appliedBy,
+  )
+  applied: Job[];
   /**
    * Exec Hash Function before Insert
    */

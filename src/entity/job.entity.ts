@@ -34,12 +34,14 @@ export class Job extends Base {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @ApiProperty({ example: 'Lap trinh Android, IOS' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
   @IsString({ always: true })
   @Column({ type: 'text' })
   name: string;
 
+  @ApiProperty({ example: 'string' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
   @IsString({ always: true })
@@ -58,16 +60,19 @@ export class Job extends Base {
   @Column({ type: 'decimal', nullable: true })
   highestWage: number;
 
+  @ApiProperty({ example: 'string' })
   @IsOptional({ groups: [UPDATE, CREATE] })
   @IsString({ always: true })
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @ApiProperty({ example: 'FULLTIME | PARTTIME' })
   @IsOptional({ groups: [UPDATE, CREATE] })
   @IsIn(enumToArray(JobType))
   @Column({ type: 'enum', enum: JobType, nullable: true })
   type: string;
 
+  @ApiProperty({ example: '1' })
   @IsOptional({ groups: [UPDATE, CREATE] })
   @IsIn(enumToArray(Experience))
   @Column({ type: 'enum', enum: Experience, nullable: true })
@@ -78,16 +83,12 @@ export class Job extends Base {
   @Column({ type: 'text' })
   slug: string;
 
+  @ApiProperty({ example: 'YYYY-MM-DD' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
   @IsDateString()
   @Column({ type: 'date' })
   deadline: Date;
-
-  @IsOptional({ groups: [UPDATE, CREATE] })
-  @IsBoolean({ always: true })
-  @Column({ type: 'boolean', default: false })
-  expirationDate: boolean;
 
   /**
    * Relation between User and Job
@@ -158,4 +159,24 @@ export class Job extends Base {
     },
   })
   favoriteBy: User[];
+
+  /**
+   * Apply Job
+   */
+  @ManyToMany(
+    type => User,
+    user => user.applied,
+  )
+  @JoinTable({
+    name: 'job_applied',
+    joinColumn: {
+      name: 'jobId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'userId',
+      referencedColumnName: 'id',
+    },
+  })
+  appliedBy: User[];
 }
