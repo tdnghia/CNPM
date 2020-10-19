@@ -36,7 +36,7 @@ import {
 } from '@nestjs/swagger';
 import { methodEnum } from 'src/common/enums/method.enum';
 import { ModuleEnum } from 'src/common/enums/module.enum';
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import * as bcrypt from 'bcrypt';
 import * as _ from 'lodash';
 import { UserSession } from 'src/common/decorators/user.decorator';
@@ -319,7 +319,11 @@ export class UserController extends BaseController<User> {
     const user = await this.repository.findOne({
       where: { id: userId, roleId: 4 },
     });
-    if (user) {
+    if (user && !user.active) {
+      const generatePassword = this.customerPassword();
+      user.password= await bcrypt.hash(generatePassword, 12);
+      user.active = true;
+      this.repository.save(user);
       // create reusable transporter object using the default SMTP transport
       const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -333,9 +337,9 @@ export class UserController extends BaseController<User> {
       const mailOptions = {
         from: '"Fred Foo 👻" <tdnghia1011@gmail.com>', // sender address
         to: user.email, // list of receivers
-        subject: 'Hello ✔', // Subject line
-        text: 'Hello world?', // plain text body
-        html: '<b> Nghĩa nè Quốc </b>', // html body
+        subject: 'Thank you for joining the App CareerNetwork!', // Subject line
+        text: 'I am so glad you registered for the CareerNetwork', // plain text body
+        html: `<b>Here's your password for login as employee</b><p>Make sure you don't share this email public</p><b>password: ${generatePassword}</b><p>Our best</p><b>Twist Team</b>`, // html body
       };
 
       transporter.sendMail(mailOptions, function(error, info) {
@@ -345,8 +349,9 @@ export class UserController extends BaseController<User> {
           console.log('Email sent: ' + info.response);
         }
       });
+      return {status: true};
     } else {
-      throw new UnauthorizedException('Invalid Credential');
+      throw new NotFoundException('User not Found')
     }
   }
   @Override('createManyBase')

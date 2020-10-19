@@ -11,7 +11,6 @@ export function Methods(...methods: string[]) {
     SetMetadata('methods', methods),
     UseGuards(JwtAuthGuard),
     UseGuards(RoleGuard),
-    UseGuards(PossessionGuard),
     ApiBearerAuth(),
     ApiUnauthorizedResponse({ description: 'Unauthorized' }),
   );

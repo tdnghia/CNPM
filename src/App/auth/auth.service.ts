@@ -5,16 +5,20 @@ import {
   InternalServerErrorException,
   NotFoundException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../../entity/user.entity';
-import { Repository } from 'typeorm';
+import { DeepPartial, getManager, Repository } from 'typeorm';
 import { Role } from 'src/entity/role.entity';
 import { UserRepository } from 'src/App/users/user.repository';
 import * as bcrypt from 'bcrypt';
 import { LoginDTO, RegisterDTO, ChangePwdDTO, EmployersDTO } from './auth.dto';
 import { sign } from 'jsonwebtoken';
 import { Payload } from 'src/types/payload';
+import axios from 'axios';
+import { AddressRepository } from '../address/address.repository';
+import { Address } from 'src/entity/address.entity';
 
 @Injectable()
 export class AuthServices {
@@ -22,6 +26,7 @@ export class AuthServices {
     private userRepository: UserRepository,
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
+    private addressRepository: AddressRepository,
   ) {}
 
   async getRolesPermission(role: string) {
@@ -61,6 +66,9 @@ export class AuthServices {
   async login(data: LoginDTO) {
     try {
       const user: User = await this.validateUser(data);
+      if(!user.active) {
+        throw new UnauthorizedException('User is Unauthorized')
+      }
       user.ExpiredToken = false;
       this.userRepository.save(user);
       const payload: Payload = {
@@ -72,7 +80,9 @@ export class AuthServices {
         token: await this.signPayload(payload),
         id: user.id,
         email: user.email,
+        profile: user.profile,
         role: user.role.role,
+        roleId: user.roleId
       };
     } catch (error) {
       throw error;
@@ -87,7 +97,8 @@ export class AuthServices {
       const data = this.userRepository.create({
         ...dto,
       });
-      return await this.userRepository.save(data);
+       await this.userRepository.save(data);
+       return this.login({password: dto.password, email: dto.email});
     } catch (error) {
       if (error.code == '23505') {
         throw new HttpException(
@@ -104,19 +115,53 @@ export class AuthServices {
 
   async addLead(dto: EmployersDTO) {
     try {
+    const manager = getManager();
+      const cityArr = [];
+      const provinces = await await axios.get(
+        'https://vapi.vnappmob.com/api/province',
+      );
+      let query = '(';
+
+      console.log('provine', provinces.data.results);
+      // console.log('dto', typeof dto.city);
+      
+      Object.keys(dto.city).forEach(key => {
+        const index = provinces.data.results.map(data=>data.province_id).indexOf(`${dto.city[key]}`);
+        if(index<0) { 
+             throw new BadRequestException('Invalid City');
+           }
+           cityArr.push({city: dto.city[key]});
+      })
+
+      const createAddress = await this.addressRepository.create(cityArr);
+      await this.addressRepository.save(createAddress);
+      
+
+      createAddress.forEach(addr => {
+          query += "'" + addr.id + "',";
+      })
+      query = query.slice(0, -1) + ')';
+      
+      const findAddress = await manager.query(`SELECT * FROM ${this.addressRepository.metadata.tableName} WHERE id in ${query} `)
       const data = this.userRepository.create({
-        roleId: 3,
+        roleId: 4,
         email: dto.email,
         active: false,
         password: 'default',
         profile: {
           phone: dto.phone,
           pageURL: dto.website,
-          name: dto.companyName,
+          name: dto.name,
         },
+        address: findAddress,
       });
-      return await this.userRepository.save(data);
+      await this.userRepository.save(data);
+      const {email, id, role, roleId, profile, createdat, updatedat} = data
+      return {email, id, role, roleId, profile, createdat, updatedat};
     } catch (error) {
+      if(error.status == 400) {
+        throw error;
+      }
       if (error.code == '23505') {
         throw new HttpException(
           {
@@ -126,8 +171,6 @@ export class AuthServices {
           HttpStatus.CONFLICT,
         );
       }
-      console.log('error', error);
-
       throw new InternalServerErrorException('Internal Server Error');
     }
   }
@@ -148,8 +191,6 @@ export class AuthServices {
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    console.log('user', userByEmail);
 
     if (
       !userByEmail ||

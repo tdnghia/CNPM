@@ -85,7 +85,7 @@ export class User extends Base {
 
   @ApiProperty({ example: 3 })
   @IsIn([2, 3, 4])
-  @Column({ type: 'int', default: 4 })
+  @Column({ type: 'int', default: 3 })
   roleId: number;
 
   /**
@@ -135,6 +135,7 @@ export class User extends Base {
     address => address.user,
   )
   @JoinTable({
+    name: 'user_address',
     joinColumn: {
       name: 'userId',
       referencedColumnName: 'id',
@@ -144,7 +145,7 @@ export class User extends Base {
       referencedColumnName: 'id',
     },
   })
-  address: Address;
+  address: Address[];
 
   /**
    * The relation between User and tag
@@ -194,10 +195,27 @@ export class User extends Base {
   jobs: Job[];
 
   /**
+   * A user can have many favorites books
+   */
+  @ManyToMany(
+    type => Job,
+    job => job.favoriteBy,
+  )
+  favorites: Job[];
+
+  /**
+   * A user can apply many jobs
+   */
+  @ManyToMany(
+    type => Job,
+    job => job.appliedBy,
+  )
+  applied: Job[];
+  /**
    * Exec Hash Function before Insert
    */
   @BeforeInsert()
-  @BeforeUpdate()
+  // @BeforeUpdate()
   async hashPassword() {
     const saltRounds = 12;
     this.password = await bcrypt.hash(this.password, saltRounds);

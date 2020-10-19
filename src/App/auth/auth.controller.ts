@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UsePipes, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, UsePipes, Put, UseGuards } from '@nestjs/common';
 import { AuthServices } from './auth.service';
 import {
   LoginDTO,
@@ -13,6 +13,7 @@ import { Methods } from 'src/common/decorators/method.decorator';
 import { methodEnum } from 'src/common/enums/method.enum';
 import { Modules } from 'src/common/decorators/module.decorator';
 import { ModuleEnum } from 'src/common/enums/module.enum';
+import { PossessionGuard } from 'src/guards/posessionHandle.guard';
 
 @ApiTags('v1/auth')
 @Controller('api/v1/auth')
@@ -54,10 +55,15 @@ export class AuthController {
 
   @Get('me')
   @Methods(methodEnum.READ)
+  @UseGuards(PossessionGuard)
   async getProfile(@UserSession() user: any) {
     const { id } = user.users;
     return await this.authService.getProfile(id);
   }
+
+  // @Put('me')
+  // @Methods(methodEnum.UPDATE)
+  // async update
 
   @Post('forgot-password')
   async forgotPassword() {}

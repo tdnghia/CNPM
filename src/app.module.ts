@@ -21,6 +21,7 @@ import { PermissionModule } from './App/permission/permission.module';
 import { JobsModule } from './App/jobs/jobs.module';
 import { AuthorizationMiddleware } from './core/middleware/authorization.middleware';
 import { ArticlesModule } from './App/articles/articles.module';
+import { AddressModule } from './App/address/address.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { ArticlesModule } from './App/articles/articles.module';
     CategoriesModule,
     PermissionModule,
     AuthModule,
+    AddressModule,
     JobsModule,
     ArticlesModule,
     TypeOrmModule.forRootAsync({

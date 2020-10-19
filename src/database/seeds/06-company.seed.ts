@@ -1,6 +1,6 @@
 import { User } from '../../entity/user.entity';
 import { Address } from '../../entity/address.entity';
-import { Connection, getConnection } from 'typeorm';
+import { Connection, getConnection, getManager } from 'typeorm';
 import { Factory, Seeder } from 'typeorm-seeding';
 import * as companyProfile from '../data/profile.json';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +9,7 @@ import axios from 'axios';
 import slugify from 'slugify';
 import * as Faker from 'faker';
 import { Profile } from '../../entity/profile.entity';
+import { take } from 'lodash';
 
 export default class CompanySeeder implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
@@ -61,7 +62,17 @@ export default class CompanySeeder implements Seeder {
           const lastName = Faker.name.lastName();
           const email = Faker.internet.email(firstName, lastName);
 
-          await getConnection()
+          await factory(Address)({
+            payload: {
+              city: provinces.data.results[track].province_id,
+              description: companyProfile[index].address,
+            },
+          }).create();
+
+          const findAddress = await addressRepository.findOne({
+            order: { createdat: 'DESC' },
+          });
+          const createCompany = await getConnection()
             .createQueryBuilder()
             .insert()
             .into(User)
@@ -74,14 +85,13 @@ export default class CompanySeeder implements Seeder {
               },
             ])
             .execute();
-          // const company = await factory(User)({ roles: ['Member'] }).create();
-
-          await factory(Address)({
-            payload: {
-              city: provinces.data.results[track].province_id,
-              description: companyProfile[index].address,
-            },
-          }).create();
+          const findCompany = await companyRepository.findOne({
+            order: { createdat: 'DESC' },
+          });
+          const manager = getManager();
+          await manager.query(
+            `INSERT INTO user_address values ('${findCompany.id}', '${findAddress.id}')`,
+          );
         }
       }
     }

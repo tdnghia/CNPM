@@ -3,7 +3,8 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToMany,
-  JoinTable, OneToMany
+  JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { Base } from './base.entity';
 import { CrudValidationGroups } from '@nestjsx/crud';
@@ -17,18 +18,17 @@ export class Address extends Base {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiProperty({ example: 'Đà Nẵng' })
+  @ApiProperty({ example: '1' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
-  @IsString({ always: true })
-  @Column({ type: 'text' })
+  @Column({ type: 'int' })
   city: string;
 
   @ApiProperty({ example: ' ' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
   @IsString({ always: true })
-  @Column({ type: 'text' })
+  @Column({ type: 'text', nullable: true })
   description: string;
 
   @IsOptional({ groups: [UPDATE, CREATE] })
@@ -56,7 +56,7 @@ export class Address extends Base {
       referencedColumnName: 'id',
     },
   })
-  user: User;
+  user: User[];
 
   /**
    * The relationship between Address and Job
@@ -66,5 +66,5 @@ export class Address extends Base {
     job => job.address,
     { cascade: true },
   )
-  jobs: Job;
+  jobs: Job[];
 }

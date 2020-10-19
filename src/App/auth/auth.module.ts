@@ -8,9 +8,10 @@ import { PermissionsEntity } from 'src/entity/permission.entity';
 import { JWTStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
+import {Address} from 'src/entity/address.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Role, PermissionsEntity]),
+    TypeOrmModule.forFeature([User, Role, PermissionsEntity, Address]),
     PassportModule,
     JwtModule.register({
       secret: process.env.SECRET_KEY,
