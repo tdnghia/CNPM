@@ -20,6 +20,7 @@ import { TransformInterceptor } from './interceptors/TransformInterceptor';
 import { PermissionModule } from './App/permission/permission.module';
 import { JobsModule } from './App/jobs/jobs.module';
 import { AuthorizationMiddleware } from './core/middleware/authorization.middleware';
+import { ArticlesModule } from './App/articles/articles.module';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { AuthorizationMiddleware } from './core/middleware/authorization.middlew
     PermissionModule,
     AuthModule,
     JobsModule,
+    ArticlesModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useClass: TypeOrmConfigService,
@@ -36,6 +38,7 @@ import { AuthorizationMiddleware } from './core/middleware/authorization.middlew
     MulterModule.register({
       dest: './uploads',
     }),
+    ArticlesModule,
   ],
   controllers: [AppController],
   providers: [
