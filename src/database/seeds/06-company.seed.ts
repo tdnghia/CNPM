@@ -1,6 +1,6 @@
 import { User } from '../../entity/user.entity';
 import { Address } from '../../entity/address.entity';
-import { Connection, getConnection } from 'typeorm';
+import { Connection, getConnection, getManager } from 'typeorm';
 import { Factory, Seeder } from 'typeorm-seeding';
 import * as companyProfile from '../data/profile.json';
 import * as bcrypt from 'bcrypt';
@@ -62,15 +62,17 @@ export default class CompanySeeder implements Seeder {
           const lastName = Faker.name.lastName();
           const email = Faker.internet.email(firstName, lastName);
 
-           await factory(Address)({
+          await factory(Address)({
             payload: {
               city: provinces.data.results[track].province_id,
               description: companyProfile[index].address,
             },
           }).create();
 
-          const findAddress = await addressRepository.findOne({order: {createdat: 'DESC'}});
-          await getConnection()
+          const findAddress = await addressRepository.findOne({
+            order: { createdat: 'DESC' },
+          });
+          const createCompany = await getConnection()
             .createQueryBuilder()
             .insert()
             .into(User)
@@ -80,13 +82,16 @@ export default class CompanySeeder implements Seeder {
                 password: await bcrypt.hash('admin', 12),
                 roleId: 4,
                 profile,
-                address: findAddress,
               },
             ])
             .execute();
-          // const company = await factory(User)({ roles: ['Member'] }).create();
-
-         
+          const findCompany = await companyRepository.findOne({
+            order: { createdat: 'DESC' },
+          });
+          const manager = getManager();
+          await manager.query(
+            `INSERT INTO user_address values ('${findCompany.id}', '${findAddress.id}')`,
+          );
         }
       }
     }

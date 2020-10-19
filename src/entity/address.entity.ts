@@ -3,7 +3,8 @@ import {
   PrimaryGeneratedColumn,
   Column,
   ManyToMany,
-  JoinTable, OneToMany
+  JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { Base } from './base.entity';
 import { CrudValidationGroups } from '@nestjsx/crud';
@@ -55,7 +56,7 @@ export class Address extends Base {
       referencedColumnName: 'id',
     },
   })
-  user: User;
+  user: User[];
 
   /**
    * The relationship between Address and Job
@@ -65,5 +66,5 @@ export class Address extends Base {
     job => job.address,
     { cascade: true },
   )
-  jobs: Job;
+  jobs: Job[];
 }

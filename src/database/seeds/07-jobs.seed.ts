@@ -9,12 +9,17 @@ import { enumToArray } from '../../core/utils/helper';
 import { Tag } from '../../entity/tag.entity';
 import { Job } from '../../entity/job.entity';
 import * as _ from 'lodash';
+import slugify from 'slugify';
+import axios from 'axios';
+import { Address } from '../../entity/address.entity';
 
 export default class JobsSeeder implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
     const authorRepository = connection.getRepository(User);
     const cateRepository = connection.getRepository(Category);
     const tagsRepository = connection.getRepository(Tag);
+    const addressRepository = connection.getRepository(Address);
+
     const lowestSalary = [
       300,
       350,
@@ -74,6 +79,35 @@ export default class JobsSeeder implements Seeder {
       const dueDate = this.getRndInteger(currentDate, 31);
       const numberOfTag = this.getRndInteger(1, 4);
 
+      const provinces = await await axios.get(
+        'https://vapi.vnappmob.com/api/province',
+      );
+      const splitAddress = _.split(jobsByAndroid[index].address, ',');
+
+      const city = this.getSlug(_.last(splitAddress));
+
+      for (let track = 0; track < provinces.data.results.length; track++) {
+        const splitProvince = _.split(
+          this.getSlug(provinces.data.results[track].province_name),
+          '-',
+        );
+        if (_.indexOf(splitProvince, 'pho') >= 0) {
+          splitProvince.splice(0, 2);
+        } else {
+          splitProvince.splice(0, 1);
+        }
+        const joinProvince = splitProvince.join('-');
+
+        if (joinProvince === city) {
+          await factory(Address)({
+            payload: {
+              city: provinces.data.results[track].province_id,
+              description: jobsByAndroid[index].address,
+            },
+          }).create();
+          break;
+        }
+      }
       //New tag to push into Jobs
       const NewTags = [];
       for (let index = 0; index < numberOfTag; index++) {
@@ -82,6 +116,9 @@ export default class JobsSeeder implements Seeder {
           NewTags.push(tagId);
         }
       }
+      const findAddress = await addressRepository.findOne({
+        order: { createdat: 'DESC' },
+      });
       const newJob = await factory(Job)({
         payload: {
           name: jobsByAndroid[index].name,
@@ -99,6 +136,7 @@ export default class JobsSeeder implements Seeder {
           deadline: new Date(`${currentYear}-${currentMonth}-${dueDate}`),
           user: author[Math.floor(Math.random() * author.length)],
           category: androidCate,
+          address: findAddress,
         },
       }).create();
 
@@ -114,4 +152,14 @@ export default class JobsSeeder implements Seeder {
   getRndInteger = (min: number, max: number) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
   };
+
+  getSlug(slug: string) {
+    return slugify(slug, {
+      replacement: '-', // replace spaces with replacement character, defaults to `-`
+      remove: undefined, // remove characters that match regex, defaults to `undefined`
+      lower: true, // convert to lower case, defaults to `false`
+      strict: false, // strip special characters except replacement, defaults to `false`
+      locale: 'vi',
+    });
+  }
 }

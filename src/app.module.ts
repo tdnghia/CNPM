@@ -19,7 +19,7 @@ import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { TransformInterceptor } from './interceptors/TransformInterceptor';
 import { PermissionModule } from './App/permission/permission.module';
 import { JobsModule } from './App/jobs/jobs.module';
-import { AuthorizationMiddleware } from './core/middleware/authorization.middleware';
+import { AddressModule } from './App/address/address.module';
 
 @Module({
   imports: [
@@ -28,6 +28,7 @@ import { AuthorizationMiddleware } from './core/middleware/authorization.middlew
     CategoriesModule,
     PermissionModule,
     AuthModule,
+    AddressModule,
     JobsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
