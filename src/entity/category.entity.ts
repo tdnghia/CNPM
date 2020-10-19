@@ -17,6 +17,7 @@ import { CrudValidationGroups } from '@nestjsx/crud';
 import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { Job } from './job.entity';
+import { Article } from './article.entity';
 
 const { CREATE, UPDATE } = CrudValidationGroups;
 @Entity('categories')
@@ -63,4 +64,13 @@ export class Category extends TreeBase {
     { cascade: true },
   )
   jobs: Job[];
+
+  /**
+   * The relationship between Article and Category
+   */
+  @OneToMany(
+    type => Article,
+    article => article.category,
+  )
+  articles: Article[];
 }
