@@ -161,7 +161,7 @@ export class JobsController extends BaseController<Job> {
     const slug = req.parsed.paramsFilter.find(
       f => f.field === 'slug' && f.operator === '$eq',
     ).value;
-
+    console.log('soft delete');
     const data = this.repository.findOne({ where: { slug } });
     if (!data) {
       throw new HttpException(
@@ -187,7 +187,7 @@ export class JobsController extends BaseController<Job> {
     console.log(slug);
 
     const data = this.repository.findOne({
-      where: { slug, deletedAt: IsNull() },
+      where: { slug, deletedat: IsNull() },
     });
     if (!data) {
       throw new HttpException(
@@ -212,7 +212,7 @@ export class JobsController extends BaseController<Job> {
 
     const data = await this.repository.findOne({
       withDeleted: true,
-      where: { slug, deletedAt: Not(IsNull()) },
+      where: { slug, deletedat: Not(IsNull()) },
     });
     if (!data) {
       throw new HttpException(

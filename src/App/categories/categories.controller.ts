@@ -124,7 +124,7 @@ export class CategoriesController extends BaseController<Category> {
     ).value;
     const data = await this.repository.findOne({
       withDeleted: true,
-      where: { slug, deletedAt: Not(IsNull()) },
+      where: { slug, deletedat: Not(IsNull()) },
     });
     if (!data) {
       throw new HttpException(

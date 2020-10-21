@@ -202,7 +202,7 @@ export class UserController extends BaseController<User> {
     try {
       const deletedUser = await this.repository.find({
         withDeleted: true,
-        where: { deletedAt: Not(IsNull()) },
+        where: { deletedat: Not(IsNull()) },
       });
       return deletedUser;
     } catch (error) {
@@ -249,7 +249,7 @@ export class UserController extends BaseController<User> {
       const data = this.repository.find({
         withDeleted: true,
         where: {
-          deletedAt: Not(IsNull()),
+          deletedat: Not(IsNull()),
         },
         relations: ['role'],
         select: ['id', 'email', 'createdat', 'role'],
