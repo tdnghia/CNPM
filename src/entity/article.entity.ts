@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CrudValidationGroups } from '@nestjsx/crud';
-import { IsNotEmpty, IsOptional } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 import { extend } from 'lodash';
 import {
   Column,
@@ -51,6 +51,8 @@ export class Article extends Base {
   )
   user: User;
 
+  @IsInt({always: true})
+  categoryId: number;
   /**
    * The relationship between Article and Category
    */
