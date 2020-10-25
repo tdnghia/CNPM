@@ -53,9 +53,7 @@ export class AddressController extends BaseController<Address> {
       `SELECT "addressId" FROM user_address WHERE "userId"='${currentUser.id}'`,
     );
     const addrIds = addressIds.map(data => data.addressId);
-    // addressIds.forEach(element => {
-    //   addrIds.push
-    // });
+
     return this.repository.findByIds(addrIds);
   }
 
