@@ -103,6 +103,13 @@ export class CategoriesController extends BaseController<Category> {
     throw new ConflictException('Category name already exists');
   }
 
+  @Get('allParent')
+  async getAllParent(@ParsedRequest() req: CrudRequest) {
+    return await this.repository.find({
+      where: { parentId: IsNull() }
+    });
+  }
+
   @Get('all')
   async getAll(@ParsedRequest() req: CrudRequest) {
     return await this.repository.findTrees();
