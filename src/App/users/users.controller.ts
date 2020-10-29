@@ -249,7 +249,7 @@ export class UserController extends BaseController<User> {
       const data = this.repository.find({
         withDeleted: true,
         where: {
-          deletedAt: Not(IsNull()),
+          deletedat: Not(IsNull()),
         },
         relations: ['role'],
         select: ['id', 'email', 'createdat', 'role'],
@@ -321,7 +321,7 @@ export class UserController extends BaseController<User> {
     });
     if (user && !user.active) {
       const generatePassword = this.customerPassword();
-      user.password= await bcrypt.hash(generatePassword, 12);
+      user.password = await bcrypt.hash(generatePassword, 12);
       user.active = true;
       this.repository.save(user);
       // create reusable transporter object using the default SMTP transport
@@ -349,9 +349,9 @@ export class UserController extends BaseController<User> {
           console.log('Email sent: ' + info.response);
         }
       });
-      return {status: true};
+      return { status: true };
     } else {
-      throw new NotFoundException('User not Found')
+      throw new NotFoundException('User not Found');
     }
   }
   @Override('createManyBase')
