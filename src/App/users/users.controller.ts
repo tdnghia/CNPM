@@ -198,7 +198,7 @@ export class UserController extends BaseController<User> {
     try {
       const deletedUser = await this.repository.find({
         withDeleted: true,
-        where: { deletedAt: Not(IsNull()) },
+        where: { deletedat: Not(IsNull()) },
       });
       return deletedUser;
     } catch (error) {
@@ -240,17 +240,17 @@ export class UserController extends BaseController<User> {
   /** Get All user Inactive status */
   @Get('inactive')
   @Methods(methodEnum.READ)
-  async getInactive(@ParsedRequest() req: CrudRequest) {
+  async getInactive(@Request() req) {
     try {
-      const data = this.repository.find({
-        withDeleted: true,
-        where: {
-          deletedat: Not(IsNull()),
+      const results: any = await this.repository.paginate(
+        {
+          limit: req.query.hasOwnProperty('limit') ? req.query.limit : 10,
+          page: req.query.hasOwnProperty('page') ? req.query.page : 0,
         },
-        relations: ['role'],
-        select: ['id', 'email', 'createdat', 'role'],
-      });
-      return data;
+        { relations: ['role'] },
+        { condition: { deletedat: Not(IsNull()) } },
+      );
+      return results;
     } catch (error) {
       throw new InternalServerErrorException('Error: Internal Server');
     }
@@ -293,10 +293,14 @@ export class UserController extends BaseController<User> {
   @Methods(methodEnum.READ)
   async getUnAuthorized(@Request() req) {
     try {
-      const results: any = await this.repository.paginate({
-        limit: req.query.hasOwnProperty('limit') ? req.query.limit : 10,
-        page: req.query.hasOwnProperty('page') ? req.query.page : 0,
-      });
+      const results: any = await this.repository.paginate(
+        {
+          limit: req.query.hasOwnProperty('limit') ? req.query.limit : 10,
+          page: req.query.hasOwnProperty('page') ? req.query.page : 0,
+        },
+        { relations: ['role'] },
+        { condition: { active: false } },
+      );
 
       results.results.map(data => {
         return {

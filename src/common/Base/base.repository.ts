@@ -1,31 +1,34 @@
 import { take } from 'lodash';
-import { Repository } from 'typeorm';
+import { Interface } from 'readline';
+import { IsNull, Not, Repository } from 'typeorm';
 import { Pagination, PaginationOption } from '../Paginate';
 
+interface RelationType {
+  relations: Array<string>;
+}
+
+// interface DeletedType {
+//   deletedat: boolean;
+// }
+
+interface ConditionType {
+  condition: Record<string, any>;
+}
 export class BaseRepository<T> extends Repository<T> {
   async paginate(
     options: PaginationOption,
-    selects?: Array<string>,
-    relations?: Array<string>,
+    relations?: RelationType,
+    condition?: ConditionType,
   ): Promise<Pagination<T>> {
-    if (relations && selects) {
+    if (condition) {
       const [results, count] = await this.findAndCount({
         take: options.limit,
         skip: options.page,
-        relations: [...relations],
-        where: {
-          active: false,
-        },
+        withDeleted: true,
+        relations: [...relations.relations],
+        where: condition.condition,
       });
       return new Pagination<T>({ results, total: count });
     }
-    const [results, count] = await this.findAndCount({
-      take: options.limit,
-      skip: options.page,
-      where: {
-        active: false,
-      },
-    });
-    return new Pagination<T>({ results, total: count });
   }
 }
