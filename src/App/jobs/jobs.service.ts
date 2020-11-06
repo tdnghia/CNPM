@@ -75,8 +75,10 @@ export class JobService extends TypeOrmCrudService<Job> {
     if (!job) {
       throw new NotFoundException(`Job not found`);
     }
-    if (!user) {
-      throw new NotFoundException('User not found');
+    console.log('user', user);
+
+    if (!user || user.roleId === 4) {
+      throw new NotFoundException('Current User is not available');
     }
     try {
       const jobApplied = await manager.query(

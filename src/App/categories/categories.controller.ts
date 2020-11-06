@@ -26,6 +26,7 @@ import {
   ParsedBody,
   Crud,
   CreateManyDto,
+  CrudController,
 } from '@nestjsx/crud';
 import { getSlug } from 'src/core/utils/helper';
 import { Not, IsNull, UpdateResult } from 'typeorm';
@@ -36,6 +37,7 @@ import { UserRepository } from '../users/user.repository';
 import { LoginDTO } from '../auth/auth.dto';
 import { CateDTO } from './categoryDTO.dto';
 import { PossessionGuard } from 'src/guards/posessionHandle.guard';
+import { BaseRepository } from 'src/common/Base/base.repository';
 
 @Crud({
   model: {
@@ -62,13 +64,14 @@ import { PossessionGuard } from 'src/guards/posessionHandle.guard';
 @Controller('/api/v1/categories')
 @Modules(ModuleEnum.CATEGORY)
 @SetMetadata('entity', ['categories'])
-export class CategoriesController extends BaseController<Category> {
+export class CategoriesController implements CrudController<Category> {
   constructor(
     public service: CategoryService,
     private readonly repository: CategoryRepository,
     private readonly authorRepository: UserRepository,
-  ) {
-    super(repository);
+  ) {}
+  get base(): CrudController<Category> {
+    return this;
   }
 
   @Override('createManyBase')

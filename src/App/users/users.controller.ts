@@ -6,7 +6,7 @@ import {
   InternalServerErrorException,
   Get,
   Put,
-  UnauthorizedException,
+  Request,
   UsePipes,
   NotFoundException,
   SetMetadata,
@@ -40,6 +40,8 @@ import * as nodemailer from 'nodemailer';
 import * as bcrypt from 'bcrypt';
 import * as _ from 'lodash';
 import { UserSession } from 'src/common/decorators/user.decorator';
+import { UserDTO } from './user.dto';
+import { Pagination } from 'src/common/Paginate';
 
 @Crud({
   model: {
@@ -138,8 +140,6 @@ export class UserController extends BaseController<User> {
       const data = await this.base.createOneBase(req, dto);
       return data;
     } catch (error) {
-      console.log('err', error);
-
       if (error.code === '23505') {
         throw new HttpException(
           {
@@ -165,8 +165,7 @@ export class UserController extends BaseController<User> {
   @UsePipes(new ValidationPipe())
   async replaceOne(
     @ParsedRequest() req: CrudRequest,
-    @ParsedBody() dto: User,
-    @UserSession() userSession: any,
+    @ParsedBody() dto: UserDTO,
   ) {
     const id = req.parsed.paramsFilter.find(
       f => f.field === 'id' && f.operator === '$eq',
@@ -183,13 +182,10 @@ export class UserController extends BaseController<User> {
       throw new BadRequestException('Role Admin can not be modified');
     }
     if (dto.roleId !== user.roleId) {
-      dto.ExpiredToken = true;
+      await this.repository.update({ id }, { ExpiredToken: true });
     }
     try {
-      await this.repository.update(
-        { id },
-        { ...dto, password: await bcrypt.hash(dto.password, 12) },
-      );
+      await this.repository.update({ id }, { ...dto });
       return { status: true };
     } catch (error) {
       throw new InternalServerErrorException('Internal Server Error');
@@ -202,7 +198,7 @@ export class UserController extends BaseController<User> {
     try {
       const deletedUser = await this.repository.find({
         withDeleted: true,
-        where: { deletedAt: Not(IsNull()) },
+        where: { deletedat: Not(IsNull()) },
       });
       return deletedUser;
     } catch (error) {
@@ -216,7 +212,7 @@ export class UserController extends BaseController<User> {
   @UsePipes(new ValidationPipe())
   async updateOne(
     @ParsedRequest() req: CrudRequest,
-    @ParsedBody() dto: Partial<User>,
+    @ParsedBody() dto: UserDTO,
   ) {
     const id = req.parsed.paramsFilter.find(
       f => f.field === 'id' && f.operator === '$eq',
@@ -244,17 +240,17 @@ export class UserController extends BaseController<User> {
   /** Get All user Inactive status */
   @Get('inactive')
   @Methods(methodEnum.READ)
-  async getInactive(@ParsedRequest() req: CrudRequest) {
+  async getInactive(@Request() req) {
     try {
-      const data = this.repository.find({
-        withDeleted: true,
-        where: {
-          deletedAt: Not(IsNull()),
+      const results: any = await this.repository.paginate(
+        {
+          limit: req.query.hasOwnProperty('limit') ? req.query.limit : 10,
+          page: req.query.hasOwnProperty('page') ? req.query.page : 0,
         },
-        relations: ['role'],
-        select: ['id', 'email', 'createdat', 'role'],
-      });
-      return data;
+        { relations: ['role'] },
+        { condition: { deletedat: Not(IsNull()) } },
+      );
+      return results;
     } catch (error) {
       throw new InternalServerErrorException('Error: Internal Server');
     }
@@ -295,17 +291,31 @@ export class UserController extends BaseController<User> {
   }
   @Get('unauthorized')
   @Methods(methodEnum.READ)
-  async getUnAuthorized(@ParsedRequest() req: CrudRequest) {
+  async getUnAuthorized(@Request() req) {
     try {
-      const data = this.repository.find({
-        where: {
-          active: false,
+      const results: any = await this.repository.paginate(
+        {
+          limit: req.query.hasOwnProperty('limit') ? req.query.limit : 10,
+          page: req.query.hasOwnProperty('page') ? req.query.page : 0,
         },
-        relations: ['role'],
-        select: ['id', 'email', 'createdat', 'role'],
+        { relations: ['role'] },
+        { condition: { active: false } },
+      );
+
+      results.results.map(data => {
+        return {
+          createdat: data.createdat,
+        };
       });
-      return data;
+      for (let index = 0; index < results.results.length; index++) {
+        delete results.results[index].password;
+        delete results.results[index].ExpiredToken;
+        delete results.results[index].role;
+      }
+      return results;
     } catch (error) {
+      console.log('err', error);
+
       throw new InternalServerErrorException('Error: Internal Server');
     }
   }
@@ -321,7 +331,7 @@ export class UserController extends BaseController<User> {
     });
     if (user && !user.active) {
       const generatePassword = this.customerPassword();
-      user.password= await bcrypt.hash(generatePassword, 12);
+      user.password = await bcrypt.hash(generatePassword, 12);
       user.active = true;
       this.repository.save(user);
       // create reusable transporter object using the default SMTP transport
@@ -349,9 +359,9 @@ export class UserController extends BaseController<User> {
           console.log('Email sent: ' + info.response);
         }
       });
-      return {status: true};
+      return { status: true };
     } else {
-      throw new NotFoundException('User not Found')
+      throw new NotFoundException('User not Found');
     }
   }
   @Override('createManyBase')
