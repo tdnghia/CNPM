@@ -25,6 +25,7 @@ import { methodEnum } from 'src/common/enums/method.enum';
 import { PermissionDTO } from './permission.dto';
 import { ValidationPipe } from 'src/shared/validation.pipe';
 import { RolePermission } from 'src/entity/role_permission.entity';
+import { get } from 'lodash';
 
 // @Crud({
 //   model: {
@@ -64,7 +65,6 @@ export class PermissionController {
     }
   }
 
-  // @Override('createManyBase')
   @Put(':id')
   @Methods(methodEnum.UPDATE)
   @UsePipes(new ValidationPipe())
@@ -114,5 +114,11 @@ export class PermissionController {
       throw new NotFoundException('Role Permission Not Found');
     }
     return await this.repository.delete(rolePermission);
+  }
+
+  @Get('role/all')
+  @Methods(methodEnum.READ)
+  async getAllrole() {
+    return await this.roleRepository.find();
   }
 }
