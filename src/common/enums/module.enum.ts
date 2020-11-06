@@ -4,9 +4,6 @@ export enum ModuleEnum {
   JOB = 'JOB',
   PERMISSION = 'PERMISSION',
   PROFILE = 'PROFILE',
-<<<<<<< HEAD
   ARTICLE = 'ARTICLE',
-=======
   ROLE = 'ROLE',
->>>>>>> dev
 }
