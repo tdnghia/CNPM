@@ -36,6 +36,7 @@ import { Tag } from './tag.entity';
 import { Category } from './category.entity';
 import { EducationsEntity } from './education.entity';
 import { Job } from './job.entity';
+import { Article } from './article.entity';
 const { CREATE, UPDATE } = CrudValidationGroups;
 
 @Entity('users')
@@ -173,6 +174,15 @@ export class User extends Base {
     { cascade: true },
   )
   educations: EducationsEntity[];
+
+  /**
+   * The relation between User and Article
+   */
+  @OneToMany(
+    type => Article,
+    article => article.user,
+  )
+  articles: Article[];
 
   /**
    * The relationship between User and JOb

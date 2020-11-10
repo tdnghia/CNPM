@@ -106,6 +106,13 @@ export class CategoriesController implements CrudController<Category> {
     throw new ConflictException('Category name already exists');
   }
 
+  @Get('allParent')
+  async getAllParent(@ParsedRequest() req: CrudRequest) {
+    return await this.repository.find({
+      where: { parentId: IsNull() }
+    });
+  }
+
   @Get('all')
   async getAll(@ParsedRequest() req: CrudRequest) {
     return await this.repository.findTrees();
@@ -127,7 +134,7 @@ export class CategoriesController implements CrudController<Category> {
     ).value;
     const data = await this.repository.findOne({
       withDeleted: true,
-      where: { slug, deletedAt: Not(IsNull()) },
+      where: { slug, deletedat: Not(IsNull()) },
     });
     if (!data) {
       throw new HttpException(

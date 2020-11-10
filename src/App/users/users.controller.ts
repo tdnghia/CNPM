@@ -39,9 +39,7 @@ import { ModuleEnum } from 'src/common/enums/module.enum';
 import * as nodemailer from 'nodemailer';
 import * as bcrypt from 'bcrypt';
 import * as _ from 'lodash';
-import { UserSession } from 'src/common/decorators/user.decorator';
 import { UserDTO } from './user.dto';
-import { Pagination } from 'src/common/Paginate';
 
 @Crud({
   model: {
