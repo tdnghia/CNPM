@@ -20,10 +20,13 @@ export class BaseRepository<T> extends Repository<T> {
     relations?: RelationType,
     condition?: ConditionType,
   ): Promise<Pagination<T>> {
+    console.log('option limit', options.limit);
+    console.log('option page', options.page);
+
     if (condition) {
       const [results, count] = await this.findAndCount({
         take: options.limit,
-        skip: options.page,
+        skip: (options.page - 1) * options.limit,
         withDeleted: true,
         relations: [...relations.relations],
         where: condition.condition,
