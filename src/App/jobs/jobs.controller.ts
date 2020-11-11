@@ -29,10 +29,8 @@ import { Modules } from 'src/common/decorators/module.decorator';
 import { UserSession } from 'src/common/decorators/user.decorator';
 import { methodEnum } from 'src/common/enums/method.enum';
 import { ModuleEnum } from 'src/common/enums/module.enum';
-import { getSlug } from 'src/core/utils/helper';
 import { Job } from 'src/entity/job.entity';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
-import { RoleGuard } from 'src/guards/role.guard';
 import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
@@ -42,7 +40,7 @@ import { JobService } from './jobs.service';
     type: Job,
   },
   params: {
-    slug: {
+    id: {
       field: 'id',
       type: 'string',
       primary: true,
