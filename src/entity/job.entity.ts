@@ -78,11 +78,6 @@ export class Job extends Base {
   @Column({ type: 'enum', enum: Experience, nullable: true })
   experience: string;
 
-  @IsOptional({ groups: [UPDATE, CREATE] })
-  @IsString({ always: true })
-  @Column({ type: 'text' })
-  slug: string;
-
   @ApiProperty({ example: 'YYYY-MM-DD' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
