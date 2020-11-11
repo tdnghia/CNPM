@@ -127,7 +127,7 @@ export default class JobsSeeder implements Seeder {
             lowestSalary[Math.floor(Math.random() * lowestSalary.length)],
           highestWage:
             highestSalary[Math.floor(Math.random() * highestSalary.length)],
-          description: jobsByAndroid[index].description,
+          description: jobsByAndroid[index].description[0],
           type: jobTypeArray[Math.floor(Math.floor(Math.random() * 2))],
           experience:
             experienceArray[
