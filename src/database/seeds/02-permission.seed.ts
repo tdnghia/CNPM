@@ -84,12 +84,14 @@ export default class CreatePermissions implements Seeder {
         where: { role: splitRolePermission[0] },
       });
 
-      const permission = permissionRepository.create({
-        methodId: findMethod.id,
-        moduleId: findModule.id,
-      });
-      await permissionRepository.save(permission);
-
+      let permission = await permissionRepository.findOne({ method, module });
+      if (!permission) {
+        permission = permissionRepository.create({
+          methodId: findMethod.id,
+          moduleId: findModule.id,
+        });
+        await permissionRepository.save(permission);
+      }
       const rolePermission = rolePermissionRepository.create({
         permissionId: permission.id,
         roleId: findRole.id,
