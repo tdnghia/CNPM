@@ -297,7 +297,7 @@ export class UserController extends BaseController<User> {
       const results: any = await this.repository.paginate(
         {
           limit: req.query.hasOwnProperty('limit') ? req.query.limit : 10,
-          page: req.query.hasOwnProperty('page') ? req.query.page : 0,
+          page: req.query.hasOwnProperty('page') ? req.query.page : 1,
         },
         { relations: ['role'] },
         { condition: { active: false } },
