@@ -240,10 +240,13 @@ export class UserController extends BaseController<User> {
   @Methods(methodEnum.READ)
   async getInactive(@Request() req) {
     try {
+      console.log('limit', req.query.limit);
+      console.log('page', req.query.page);
+
       const results: any = await this.repository.paginate(
         {
           limit: req.query.hasOwnProperty('limit') ? req.query.limit : 10,
-          page: req.query.hasOwnProperty('page') ? req.query.page : 0,
+          page: req.query.hasOwnProperty('page') ? req.query.page : 1,
         },
         { relations: ['role'] },
         { condition: { deletedat: Not(IsNull()) } },
