@@ -43,7 +43,7 @@ import { JobService } from './jobs.service';
   },
   params: {
     slug: {
-      field: 'slug',
+      field: 'id',
       type: 'string',
       primary: true,
     },
@@ -76,7 +76,6 @@ export class JobsController extends BaseController<Job> {
   @Methods(methodEnum.CREATE)
   async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
     try {
-      dto.slug = getSlug(dto.name);
       const data = await this.base.createOneBase(req, dto);
       return data;
     } catch (error) {
@@ -129,10 +128,10 @@ export class JobsController extends BaseController<Job> {
     }
   }
 
-  @Put('updateOne/:slug')
-  async updateUser(@Body() dto: Partial<Job>, @Param('slug') slug: string) {
+  @Put('updateOne/:id')
+  async updateUser(@Body() dto: Partial<Job>, @Param('id') id: string) {
     try {
-      const result = await this.repository.findOne({ slug: slug });
+      const result = await this.repository.findOne({ id: id });
       if (!result) {
         throw new HttpException(
           {
@@ -142,9 +141,7 @@ export class JobsController extends BaseController<Job> {
           HttpStatus.NOT_FOUND,
         );
       }
-
-      dto.slug = getSlug(dto.name);
-      return await this.repository.update({ slug }, dto);
+      return await this.repository.update({ id }, dto);
     } catch (error) {
       throw new HttpException(
         {
@@ -158,11 +155,10 @@ export class JobsController extends BaseController<Job> {
 
   @Override('deleteOneBase')
   async softDelete(@ParsedRequest() req: CrudRequest): Promise<void> {
-    const slug = req.parsed.paramsFilter.find(
-      f => f.field === 'slug' && f.operator === '$eq',
+    const id = req.parsed.paramsFilter.find(
+      f => f.field === 'id' && f.operator === '$eq',
     ).value;
-    console.log('soft delete');
-    const data = this.repository.findOne({ where: { slug } });
+    const data = this.repository.findOne({ where: { id } });
     if (!data) {
       throw new HttpException(
         {
@@ -173,21 +169,20 @@ export class JobsController extends BaseController<Job> {
       );
     }
     try {
-      await this.repository.softDelete({ slug });
+      await this.repository.softDelete({ id });
     } catch (error) {
       throw new InternalServerErrorException('Incomplete CrudRequest');
     }
   }
 
-  @Delete('/delete/:slug')
+  @Delete('/delete/:id')
   async forceDelete(
     @ParsedRequest() req: CrudRequest,
-    @Param('slug') slug: string,
+    @Param('id') id: string,
   ): Promise<void> {
-    console.log(slug);
-
+    console.log(id);
     const data = this.repository.findOne({
-      where: { slug, deletedat: IsNull() },
+      where: { id, deletedat: IsNull() },
     });
     if (!data) {
       throw new HttpException(
@@ -199,20 +194,20 @@ export class JobsController extends BaseController<Job> {
       );
     }
     try {
-      await this.repository.delete({ slug, deletedat: IsNull() });
+      await this.repository.delete({ id, deletedat: IsNull() });
     } catch (error) {
       throw new InternalServerErrorException('Incomplete CrudRequest');
     }
   }
   @Override('updateOneBase')
   async restore(@ParsedRequest() req: CrudRequest): Promise<void> {
-    const slug = req.parsed.paramsFilter.find(
-      f => f.field === 'slug' && f.operator === '$eq',
+    const id = req.parsed.paramsFilter.find(
+      f => f.field === 'id' && f.operator === '$eq',
     ).value;
 
     const data = await this.repository.findOne({
       withDeleted: true,
-      where: { slug, deletedat: Not(IsNull()) },
+      where: { id, deletedat: Not(IsNull()) },
     });
     if (!data) {
       throw new HttpException(
@@ -223,7 +218,7 @@ export class JobsController extends BaseController<Job> {
         HttpStatus.NOT_FOUND,
       );
     }
-    await this.repository.restore({ slug });
+    await this.repository.restore({ id });
   }
 
   @Post('/:id/favorites')
