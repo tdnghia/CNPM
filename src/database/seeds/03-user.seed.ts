@@ -18,19 +18,19 @@ export default class CreateRoles implements Seeder {
         },
       ])
       .execute();
-    for (let index = 0; index < user.length; index++) {
-      await getConnection()
-        .createQueryBuilder()
-        .insert()
-        .into(User)
-        .values([
-          {
-            ...user[index],
-            password: await bcrypt.hash('admin', 12),
-          },
-        ])
-        .execute();
-    }
+    // for (let index = 0; index < user.length; index++) {
+    //   await getConnection()
+    //     .createQueryBuilder()
+    //     .insert()
+    //     .into(User)
+    //     .values([
+    //       {
+    //         ...user[index],
+    //         password: await bcrypt.hash('admin', 12),
+    //       },
+    //     ])
+    //     .execute();
+    // }
     await factory(User)({ roles: ['Member'] }).createMany(10);
   }
 }
