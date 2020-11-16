@@ -17,7 +17,7 @@ define(Job, (faker: typeof Faker, context: { payload?: Job }) => {
   job.experience = payload.experience;
   job.deadline = payload.deadline;
   job.user = payload.user;
-  job.category = payload.category;
+  job.categories = payload.categories;
   job.address = payload.address;
   return job;
 });

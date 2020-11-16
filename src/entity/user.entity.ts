@@ -32,7 +32,6 @@ import { Role } from '../entity/role.entity';
 import { Notification } from './notification.entity';
 import { Address } from './address.entity';
 import { Profile } from './profile.entity';
-import { Tag } from './tag.entity';
 import { Category } from './category.entity';
 import { EducationsEntity } from './education.entity';
 import { Job } from './job.entity';
@@ -146,15 +145,6 @@ export class User extends Base {
     },
   })
   address: Address[];
-
-  /**
-   * The relation between User and tag
-   */
-  @OneToMany(
-    type => Tag,
-    Tag => Tag.author,
-  )
-  tags: Tag[];
 
   /**
    * The relation between User and category
