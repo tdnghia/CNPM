@@ -6,7 +6,6 @@ import * as jobsByAndroid from '../data/jobs.json';
 import { Experience } from '../../common/enums/experience.enum';
 import { JobType } from '../../common/enums/jobTypes.enum';
 import { enumToArray } from '../../core/utils/helper';
-import { Tag } from '../../entity/tag.entity';
 import { Job } from '../../entity/job.entity';
 import * as _ from 'lodash';
 import slugify from 'slugify';
@@ -17,7 +16,6 @@ export default class JobsSeeder implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
     const authorRepository = connection.getRepository(User);
     const cateRepository = connection.getRepository(Category);
-    const tagsRepository = connection.getRepository(Tag);
     const addressRepository = connection.getRepository(Address);
 
     const lowestSalary = [
@@ -64,7 +62,6 @@ export default class JobsSeeder implements Seeder {
     const experienceArray = enumToArray(Experience);
     const jobTypeArray = enumToArray(JobType);
 
-    const tags = await tagsRepository.find();
     const androidCate = await cateRepository.findOne({
       where: { name: 'Android' },
     });
@@ -108,14 +105,7 @@ export default class JobsSeeder implements Seeder {
           break;
         }
       }
-      //New tag to push into Jobs
-      const NewTags = [];
-      for (let index = 0; index < numberOfTag; index++) {
-        const tagId = tags[Math.floor(Math.random() * tags.length)].id;
-        if (_.indexOf(NewTags, tagId) < 0) {
-          NewTags.push(tagId);
-        }
-      }
+      
       const findAddress = await addressRepository.findOne({
         order: { createdat: 'DESC' },
       });
@@ -141,12 +131,6 @@ export default class JobsSeeder implements Seeder {
       }).create();
 
       const manager = await getManager();
-
-      for (let index = 0; index < NewTags.length; index++) {
-        await manager.query(
-          `INSERT INTO jobs_tags_tags values ('${newJob.id}', '${NewTags[index]}')`,
-        );
-      }
     }
   }
   getRndInteger = (min: number, max: number) => {

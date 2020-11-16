@@ -60,7 +60,7 @@ export class Category extends TreeBase {
    */
   @OneToMany(
     type => Job,
-    job => job.category,
+    job => job.categories,
     { cascade: true },
   )
   jobs: Job[];

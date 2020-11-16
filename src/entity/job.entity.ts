@@ -24,7 +24,6 @@ import { ApiProperty } from '@nestjs/swagger';
 import { JobType } from '../common/enums/jobTypes.enum';
 import { Experience } from '../common/enums/experience.enum';
 import { enumToArray } from '../core/utils/helper';
-import { Tag } from './tag.entity';
 import { Category } from './category.entity';
 import { Address } from './address.entity';
 
@@ -96,33 +95,13 @@ export class Job extends Base {
   user: User;
 
   /**
-   * The relationship between User and Tag
-   *
-   */
-  @ManyToMany(
-    type => Tag,
-    tag => tag.jobs,
-  )
-  @JoinTable({
-    joinColumn: {
-      name: 'jobId',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'tagId',
-      referencedColumnName: 'id',
-    },
-  })
-  tags: Tag[];
-
-  /**
    * The relationship between Job and Category
    */
   @ManyToOne(
     type => Category,
     category => category.jobs,
   )
-  category: Category;
+  categories: Category[];
 
   /**
    * The relationship between Job and address
