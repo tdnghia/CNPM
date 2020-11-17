@@ -10,6 +10,7 @@ import { Job } from 'src/entity/job.entity';
 import { JobRepository } from './jobs.repository';
 import { getManager } from 'typeorm';
 import { UserRepository } from '../users/user.repository';
+import { CategoryRepository } from '../categories/categories.repository';
 
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
@@ -18,6 +19,7 @@ export class JobService extends TypeOrmCrudService<Job> {
     @InjectRepository(Job) repo,
     private readonly repository: JobRepository,
     private readonly userRepository: UserRepository,
+    private readonly cateRepository: CategoryRepository,
   ) {
     super(repo);
   }
@@ -99,6 +101,20 @@ export class JobService extends TypeOrmCrudService<Job> {
       }
       throw new InternalServerErrorException(
         `Internal Server Error Exception ${error}`,
+      );
+    }
+  }
+
+  async createJob(dto: Job) {
+    try {
+      const findCateIds = await this.cateRepository.findByIds(dto.cateIds);
+      return await this.repository.save({
+        ...dto,
+        categories: findCateIds,
+      });
+    } catch (error) {
+      throw new InternalServerErrorException(
+        `INternal Server Error Exception ${error}`,
       );
     }
   }

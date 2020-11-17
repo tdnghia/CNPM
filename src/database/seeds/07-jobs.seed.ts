@@ -56,7 +56,13 @@ export default class JobsSeeder implements Seeder {
       5000,
     ];
     const author = await authorRepository.find({ where: { roleId: 4 } });
-    console.log('author', author);
+
+    const numberOfCate = this.getRndInteger(3, 6);
+    const [cate, count] = await cateRepository.findAndCount();
+    const catesArr = [];
+    for (let index = 0; index < numberOfCate; index++) {
+      catesArr.push(cate[Math.floor(Math.random() * count)]);
+    }
 
     const date = new Date();
     const experienceArray = enumToArray(Experience);
@@ -74,7 +80,6 @@ export default class JobsSeeder implements Seeder {
       const currentMonth = date.getMonth();
       const currentYear = date.getFullYear();
       const dueDate = this.getRndInteger(currentDate, 31);
-      const numberOfTag = this.getRndInteger(1, 4);
 
       const provinces = await await axios.get(
         'https://vapi.vnappmob.com/api/province',
@@ -105,7 +110,7 @@ export default class JobsSeeder implements Seeder {
           break;
         }
       }
-      
+
       const findAddress = await addressRepository.findOne({
         order: { createdat: 'DESC' },
       });
@@ -125,12 +130,24 @@ export default class JobsSeeder implements Seeder {
             ],
           deadline: new Date(`${currentYear}-${currentMonth}-${dueDate}`),
           user: author[Math.floor(Math.random() * author.length)],
-          category: androidCate,
+          category: catesArr,
           address: findAddress,
         },
       }).create();
 
       const manager = await getManager();
+      for (let index = 0; index < numberOfCate; index++) {
+        const rndIndex = Math.floor(Math.random() * count);
+        const findJobCate = await manager.query(
+          `SELECT * FROM "Job_Cate" WHERE "jobId"='${newJob.id}' AND "cateId"='${cate[rndIndex].id}'`,
+        );
+
+        if (findJobCate.length === 0) {
+          await manager.query(
+            `INSERT INTO "Job_Cate" values('${newJob.id}', ${cate[rndIndex].id})`,
+          );
+        }
+      }
     }
   }
   getRndInteger = (min: number, max: number) => {
