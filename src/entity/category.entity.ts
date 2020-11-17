@@ -58,7 +58,7 @@ export class Category extends TreeBase {
   /**
    * The relationship between Job and Category
    */
-  @OneToMany(
+  @ManyToMany(
     type => Job,
     job => job.categories,
     { cascade: true },

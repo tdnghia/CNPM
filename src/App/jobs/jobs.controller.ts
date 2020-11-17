@@ -56,6 +56,9 @@ import { JobService } from './jobs.service';
       'user.profile': {
         eager: true,
       },
+      categories: {
+        eager: true,
+      },
     },
   },
 })
@@ -73,18 +76,7 @@ export class JobsController extends BaseController<Job> {
   @Override('createOneBase')
   @Methods(methodEnum.CREATE)
   async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
-    try {
-      const data = await this.base.createOneBase(req, dto);
-      return data;
-    } catch (error) {
-      throw new HttpException(
-        {
-          message: 'Internal Server error',
-          status: HttpStatus.BAD_REQUEST,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    return this.service.createJob(dto);
   }
 
   @Override('getManyBase')
