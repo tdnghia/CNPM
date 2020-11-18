@@ -97,10 +97,21 @@ export class Job extends Base {
   /**
    * The relationship between Job and Category
    */
-  @ManyToOne(
+  @ManyToMany(
     type => Category,
     category => category.jobs,
   )
+  @JoinTable({
+    name: 'job_category',
+    joinColumn: {
+      name: 'jobId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'categoryId',
+      referencedColumnName: 'id',
+    },
+  })
   categories: Category[];
 
   /**
