@@ -7,6 +7,7 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  JoinColumn,
 } from 'typeorm';
 import { CrudValidationGroups } from '@nestjsx/crud';
 import { Base } from './base.entity';
@@ -84,6 +85,24 @@ export class Job extends Base {
   @Column({ type: 'date' })
   deadline: Date;
 
+  @ApiProperty({
+    example:
+      'https://eatsleepworkrepeat.com/wp-content/uploads/2020/06/office.jpg',
+  })
+  @IsOptional({ groups: [CREATE, UPDATE] })
+  @IsString({ always: true })
+  @Column({ type: 'text', nullable: true })
+  introImg: string;
+
+  @IsOptional({ groups: [UPDATE, CREATE] })
+  @IsBoolean()
+  @Column({ type: 'boolean', default: false })
+  status: boolean;
+
+  @ApiProperty({ example: [3, 2, 19] })
+  @IsOptional({ groups: [UPDATE] })
+  @IsNotEmpty({ groups: [CREATE] })
+  cateIds: Array<number | string>;
   /**
    * Relation between User and Job
    */
@@ -102,13 +121,21 @@ export class Job extends Base {
     category => category.jobs,
   )
   @JoinTable({
+<<<<<<< HEAD
     name: 'job_category',
+=======
+    name: 'Job_Cate',
+>>>>>>> 4896b982fdf9be10e0f926fe7e4cce5a1fd63396
     joinColumn: {
       name: 'jobId',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
+<<<<<<< HEAD
       name: 'categoryId',
+=======
+      name: 'cateId',
+>>>>>>> 4896b982fdf9be10e0f926fe7e4cce5a1fd63396
       referencedColumnName: 'id',
     },
   })

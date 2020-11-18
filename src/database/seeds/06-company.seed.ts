@@ -9,7 +9,6 @@ import axios from 'axios';
 import slugify from 'slugify';
 import * as Faker from 'faker';
 import { Profile } from '../../entity/profile.entity';
-import { take } from 'lodash';
 
 export default class CompanySeeder implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
@@ -23,7 +22,6 @@ export default class CompanySeeder implements Seeder {
       const splitAddress = _.split(companyProfile[index].address, ',');
 
       const city = this.getSlug(_.last(splitAddress));
-      const district = this.getSlug(splitAddress[splitAddress.length - 2]);
 
       for (let track = 0; track < provinces.data.results.length; track++) {
         const splitProvince = _.split(
@@ -72,7 +70,7 @@ export default class CompanySeeder implements Seeder {
           const findAddress = await addressRepository.findOne({
             order: { createdat: 'DESC' },
           });
-          const createCompany = await getConnection()
+          await getConnection()
             .createQueryBuilder()
             .insert()
             .into(User)

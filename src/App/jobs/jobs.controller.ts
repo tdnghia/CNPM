@@ -29,10 +29,8 @@ import { Modules } from 'src/common/decorators/module.decorator';
 import { UserSession } from 'src/common/decorators/user.decorator';
 import { methodEnum } from 'src/common/enums/method.enum';
 import { ModuleEnum } from 'src/common/enums/module.enum';
-import { getSlug } from 'src/core/utils/helper';
 import { Job } from 'src/entity/job.entity';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
-import { RoleGuard } from 'src/guards/role.guard';
 import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
@@ -42,7 +40,7 @@ import { JobService } from './jobs.service';
     type: Job,
   },
   params: {
-    slug: {
+    id: {
       field: 'id',
       type: 'string',
       primary: true,
@@ -56,6 +54,9 @@ import { JobService } from './jobs.service';
         exclude: ['password'],
       },
       'user.profile': {
+        eager: true,
+      },
+      categories: {
         eager: true,
       },
     },
@@ -75,18 +76,7 @@ export class JobsController extends BaseController<Job> {
   @Override('createOneBase')
   @Methods(methodEnum.CREATE)
   async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
-    try {
-      const data = await this.base.createOneBase(req, dto);
-      return data;
-    } catch (error) {
-      throw new HttpException(
-        {
-          message: 'Internal Server error',
-          status: HttpStatus.BAD_REQUEST,
-        },
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    return this.service.createJob(dto);
   }
 
   @Override('getManyBase')

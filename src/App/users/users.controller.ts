@@ -240,10 +240,13 @@ export class UserController extends BaseController<User> {
   @Methods(methodEnum.READ)
   async getInactive(@Request() req) {
     try {
+      console.log('limit', req.query.limit);
+      console.log('page', req.query.page);
+
       const results: any = await this.repository.paginate(
         {
           limit: req.query.hasOwnProperty('limit') ? req.query.limit : 10,
-          page: req.query.hasOwnProperty('page') ? req.query.page : 0,
+          page: req.query.hasOwnProperty('page') ? req.query.page : 1,
         },
         { relations: ['role'] },
         { condition: { deletedat: Not(IsNull()) } },
@@ -294,26 +297,24 @@ export class UserController extends BaseController<User> {
       const results: any = await this.repository.paginate(
         {
           limit: req.query.hasOwnProperty('limit') ? req.query.limit : 10,
-          page: req.query.hasOwnProperty('page') ? req.query.page : 0,
+          page: req.query.hasOwnProperty('page') ? req.query.page : 1,
         },
         { relations: ['role'] },
         { condition: { active: false } },
       );
 
-      results.results.map(data => {
+      results.data.map(data => {
         return {
           createdat: data.createdat,
         };
       });
-      for (let index = 0; index < results.results.length; index++) {
-        delete results.results[index].password;
-        delete results.results[index].ExpiredToken;
-        delete results.results[index].role;
+      for (let index = 0; index < results.data.length; index++) {
+        delete results.data[index].password;
+        delete results.data[index].ExpiredToken;
+        delete results.data[index].role;
       }
       return results;
     } catch (error) {
-      console.log('err', error);
-
       throw new InternalServerErrorException('Error: Internal Server');
     }
   }
