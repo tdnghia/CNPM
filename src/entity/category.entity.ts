@@ -63,6 +63,17 @@ export class Category extends TreeBase {
     job => job.categories,
     { cascade: true },
   )
+  @JoinTable({
+    name: 'job_category',
+    joinColumn: {
+      name: 'jobId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'categoryId',
+      referencedColumnName: 'id',
+    },
+  })
   jobs: Job[];
 
   /**
