@@ -13,7 +13,12 @@ import {
 } from '@nestjs/common';
 import { PermissionService } from './permission.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CrudRequest, Override, ParsedBody, ParsedRequest } from '@nestjsx/crud';
+import {
+  CrudRequest,
+  Override,
+  ParsedBody,
+  ParsedRequest,
+} from '@nestjsx/crud';
 import { RolePermissionRepository } from './rolePermission.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/entity/role.entity';
@@ -124,26 +129,29 @@ export class PermissionController {
   async getAllrole() {
     return await this.roleRepository.find();
   }
- 
+
   @Put(':permissionId/updatePosession')
   @Methods(methodEnum.UPDATE)
   async updatePosession(
     @Param('permissionId') permissionId: number,
-    @Body() dto: PermissionDTO
-    ) {
+    @Body() dto: PermissionDTO,
+  ) {
     if (dto.roleId == 1) {
       throw new BadRequestException('Posession roleAdmin can not be Modified');
     }
 
-    return this.repository.update({ roleId: dto.roleId, permissionId: permissionId}, dto);
+    return this.repository.update(
+      { roleId: dto.roleId, permissionId: permissionId },
+      dto,
+    );
   }
 
   @Post('role')
   @Methods(methodEnum.CREATE)
   async createRole(@Body() dto: RoleDTO) {
     try {
-      const newRole = this.roleRepository.create({ 
-        role: dto.role
+      const newRole = this.roleRepository.create({
+        role: dto.role,
       });
       const role = await this.roleRepository.save(newRole);
       for (let i = 0; i < dto.permissionPosession.length; i++) {
@@ -151,8 +159,7 @@ export class PermissionController {
           roleId: role.id,
           permissionId: dto.permissionPosession[i].permissionId,
           posession: dto.permissionPosession[i].posession,
-        })
-
+        });
         await this.repository.save(newRolePermission);
       }
     } catch {
