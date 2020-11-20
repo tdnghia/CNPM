@@ -109,7 +109,7 @@ export class CategoriesController implements CrudController<Category> {
   @Get('allParent')
   async getAllParent(@ParsedRequest() req: CrudRequest) {
     return await this.repository.find({
-      where: { parentId: IsNull() }
+      where: { parentId: IsNull() },
     });
   }
 

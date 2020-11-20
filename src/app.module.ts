@@ -22,6 +22,7 @@ import { JobsModule } from './App/jobs/jobs.module';
 import { AuthorizationMiddleware } from './core/middleware/authorization.middleware';
 import { ArticlesModule } from './App/articles/articles.module';
 import { AddressModule } from './App/address/address.module';
+import { UploadModule } from './App/upload/upload/upload.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AddressModule } from './App/address/address.module';
     AuthModule,
     AddressModule,
     JobsModule,
+    UploadModule,
     ArticlesModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

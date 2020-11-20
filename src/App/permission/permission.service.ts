@@ -63,8 +63,6 @@ export class PermissionService {
         relations: ['method', 'module'],
       });
 
-      console.log('permission', permissions);
-
       permissions.forEach(permission => {
         const scope = `${_.toUpper(permission.method.method)} ${_.toUpper(
           permission.module.module,
