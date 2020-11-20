@@ -91,7 +91,6 @@ export class UploadController {
       }
       oAuth2Client.setCredentials(JSON.parse(token));
       callback(oAuth2Client); //list files and upload file
-      //callback(oAuth2Client, '0B79LZPgLDaqESF9HV2V3YzYySkE');//get file
     });
   }
 
