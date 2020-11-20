@@ -9,7 +9,7 @@ async function bootstrap() {
   const options = new DocumentBuilder()
     .setTitle('The Career Network API Documentation')
     .setDescription('The Career Network API Documentation description')
-    .setVersion('1.0')
+    .setVersion('3.1')
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
