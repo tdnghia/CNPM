@@ -24,8 +24,6 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
     });
   }
   async validate(payload: any, done: VerifiedCallback) {
-    console.log('payload', payload);
-
     const currentUser = await this.userRepository.findOne({
       where: { id: payload.id },
     });
@@ -45,7 +43,6 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
       )}`;
       permissionRole.push(rolePermission);
     });
-
     return { users: payload, permission: permissionRole };
   }
 }

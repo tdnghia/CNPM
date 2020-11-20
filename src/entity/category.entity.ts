@@ -58,11 +58,22 @@ export class Category extends TreeBase {
   /**
    * The relationship between Job and Category
    */
-  @OneToMany(
+  @ManyToMany(
     type => Job,
-    job => job.category,
+    job => job.categories,
     { cascade: true },
   )
+  @JoinTable({
+    name: 'job_category',
+    joinColumn: {
+      name: 'jobId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'categoryId',
+      referencedColumnName: 'id',
+    },
+  })
   jobs: Job[];
 
   /**

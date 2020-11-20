@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   HttpException,
   Injectable,
   InternalServerErrorException,
@@ -13,6 +14,7 @@ import { PermissionsEntity } from 'src/entity/permission.entity';
 import { RolePermission } from 'src/entity/role_permission.entity';
 import { PermissionDTO } from './permission.dto';
 import { UserRepository } from '../users/user.repository';
+import { ModulesEntity } from 'src/entity/module.entity';
 
 @Injectable()
 export class PermissionService {
@@ -22,6 +24,8 @@ export class PermissionService {
     private readonly roleRepository: Repository<Role>,
     @InjectRepository(PermissionsEntity)
     private readonly permissionRepository: Repository<PermissionsEntity>,
+    @InjectRepository(ModulesEntity)
+    private readonly moduleRepository: Repository<ModulesEntity>,
     private readonly userRepository: UserRepository,
   ) {}
   async getRolesPermission(role: string) {
@@ -63,8 +67,6 @@ export class PermissionService {
         relations: ['method', 'module'],
       });
 
-      console.log('permission', permissions);
-
       permissions.forEach(permission => {
         const scope = `${_.toUpper(permission.method.method)} ${_.toUpper(
           permission.module.module,
@@ -93,6 +95,35 @@ export class PermissionService {
     }
   }
 
+  async findPermission(moduleId: number, methodId: number) {
+    try {
+      const permission = this.permissionRepository.findOne({
+        where: { moduleId: moduleId, methodId: methodId }
+      })
+
+      return permission ? true : false;
+    } catch (error) {
+      throw new InternalServerErrorException('Interal Server Error Exception');
+    }
+  }
+
+  async createPermission(data: PermissionsEntity) {
+    try {
+      const permission = await this.permissionRepository.findOne({
+        where: { moduleId: data.moduleId, methodId: data.methodId }
+      })
+      if (permission) {
+        return new BadRequestException('Permission already exists');
+      }
+      const newPermission = await this.permissionRepository.create({ 
+        ...data
+      });
+      await this.permissionRepository.save(newPermission);
+    } catch (error) {
+      throw new InternalServerErrorException('Interal Server Error Exception');
+    }
+  }
+
   async saveRolePermission(
     rolePermission: RolePermission,
     data: PermissionDTO,
@@ -116,6 +147,34 @@ export class PermissionService {
         }),
       );
       return await this.repository.save(Object);
+    } catch (error) {
+      throw new InternalServerErrorException('Interal Server Error Exception');
+    }
+  }
+
+  async createModule(dto: ModulesEntity) {
+    try {
+      const newModule = this.moduleRepository.create({
+        ...dto
+      });
+      const module = await this.moduleRepository.save(newModule);
+      console.log('here');
+      for (let i = 1; i <= 4; i++) {
+        const newPermission = await this.permissionRepository.create({
+          moduleId: module.id,
+          methodId: i
+        })
+        const permission = await this.permissionRepository.save(newPermission);
+
+        const newRolePermission = await this.repository.create({
+          roleId: 1,
+          permissionId: newPermission.id,
+          posession: "ANY"
+        });
+        await this.repository.save(newRolePermission);
+      }
+
+      return module;
     } catch (error) {
       throw new InternalServerErrorException('Interal Server Error Exception');
     }

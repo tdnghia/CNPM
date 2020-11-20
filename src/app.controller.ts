@@ -29,23 +29,15 @@ export class AppController {
   @Post()
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file, @Res() res) {
-    // this.metaData = {
-    //   mimeType: 'image/jpeg',
-    //   body: fs.createReadStream(file.path),
-    // };
-
     this.path = file.path;
+    console.log('path', this.path);
+
     let data;
     await fs.readFile('credentials.json', async (err, content: any) => {
       if (err) {
         throw new InternalServerErrorException('Error client secret file');
       }
-      // Authorize a client with credentials, then call the Google Drive API.
-      //authorize(JSON.parse(content), listFiles);
-      //authorize(JSON.parse(content), listFiles);
       await this.authorize(JSON.parse(content), async auth => {
-        // res.toJson(this.uploadImage(auth, file.path));
-        // console.log(await this.uploadImage(auth, file.path));
         await this.uploadImage(auth, file.path, res);
       });
     });
@@ -56,6 +48,7 @@ export class AppController {
       mimeType: 'image/jpeg',
       body: fs.createReadStream(path),
     };
+
     const fileMetadata = {
       name: 'image.jpg',
       parents: ['1Fz4i97zoLQYPvmKKZG27F07HIOX1mIrr'],
@@ -82,28 +75,8 @@ export class AppController {
         }
       },
     );
-
-    // await drive.files
-    //   .create({
-    //     resource: fileMetadata,
-    //     media: metaData,
-    //     fields: 'id',
-    //   })
-    //   .then(res => {
-    //     this.url = res.data.id;
-    //     // return res;
-    //     // res.json(`https://drive.google.com/uc?id=${res.data.id}`);
-    //   })
-    //   .catch(err => {
-    //     throw new HttpException(
-    //       {
-    //         message: 'Internal Server Error',
-    //         status: HttpStatus.BAD_REQUEST,
-    //       },
-    //       HttpStatus.BAD_REQUEST,
-    //     );
-    //   });
   }
+
   authorize(credentials: any, callback: any) {
     const TOKEN_PATH = 'token.json';
     // eslint-disable-next-line @typescript-eslint/camelcase

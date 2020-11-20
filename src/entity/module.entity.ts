@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   Entity,
   PrimaryGeneratedColumn,
@@ -10,8 +11,11 @@ import { PermissionsEntity } from './permission.entity';
 export class ModulesEntity {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @ApiProperty({ example: 'NOTIFICATION' })
   @Column('text')
   module: string;
+
   @OneToMany(
     type => PermissionsEntity,
     permission => permission.module,

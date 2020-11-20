@@ -6,7 +6,6 @@ import * as jobsByAndroid from '../data/jobs.json';
 import { Experience } from '../../common/enums/experience.enum';
 import { JobType } from '../../common/enums/jobTypes.enum';
 import { enumToArray } from '../../core/utils/helper';
-import { Tag } from '../../entity/tag.entity';
 import { Job } from '../../entity/job.entity';
 import * as _ from 'lodash';
 import slugify from 'slugify';
@@ -17,7 +16,6 @@ export default class JobsSeeder implements Seeder {
   public async run(factory: Factory, connection: Connection): Promise<any> {
     const authorRepository = connection.getRepository(User);
     const cateRepository = connection.getRepository(Category);
-    const tagsRepository = connection.getRepository(Tag);
     const addressRepository = connection.getRepository(Address);
 
     const lowestSalary = [
@@ -58,13 +56,18 @@ export default class JobsSeeder implements Seeder {
       5000,
     ];
     const author = await authorRepository.find({ where: { roleId: 4 } });
-    console.log('author', author);
+
+    const numberOfCate = this.getRndInteger(3, 6);
+    const [cate, count] = await cateRepository.findAndCount();
+    const catesArr = [];
+    for (let index = 0; index < numberOfCate; index++) {
+      catesArr.push(cate[Math.floor(Math.random() * count)]);
+    }
 
     const date = new Date();
     const experienceArray = enumToArray(Experience);
     const jobTypeArray = enumToArray(JobType);
 
-    const tags = await tagsRepository.find();
     const androidCate = await cateRepository.findOne({
       where: { name: 'Android' },
     });
@@ -77,7 +80,6 @@ export default class JobsSeeder implements Seeder {
       const currentMonth = date.getMonth();
       const currentYear = date.getFullYear();
       const dueDate = this.getRndInteger(currentDate, 31);
-      const numberOfTag = this.getRndInteger(1, 4);
 
       const provinces = await await axios.get(
         'https://vapi.vnappmob.com/api/province',
@@ -108,14 +110,7 @@ export default class JobsSeeder implements Seeder {
           break;
         }
       }
-      //New tag to push into Jobs
-      const NewTags = [];
-      for (let index = 0; index < numberOfTag; index++) {
-        const tagId = tags[Math.floor(Math.random() * tags.length)].id;
-        if (_.indexOf(NewTags, tagId) < 0) {
-          NewTags.push(tagId);
-        }
-      }
+
       const findAddress = await addressRepository.findOne({
         order: { createdat: 'DESC' },
       });
@@ -135,17 +130,23 @@ export default class JobsSeeder implements Seeder {
             ],
           deadline: new Date(`${currentYear}-${currentMonth}-${dueDate}`),
           user: author[Math.floor(Math.random() * author.length)],
-          category: androidCate,
+          category: catesArr,
           address: findAddress,
         },
       }).create();
 
       const manager = await getManager();
-
-      for (let index = 0; index < NewTags.length; index++) {
-        await manager.query(
-          `INSERT INTO jobs_tags_tags values ('${newJob.id}', '${NewTags[index]}')`,
+      for (let index = 0; index < numberOfCate; index++) {
+        const rndIndex = Math.floor(Math.random() * count);
+        const findJobCate = await manager.query(
+          `SELECT * FROM "Job_Cate" WHERE "jobId"='${newJob.id}' AND "cateId"='${cate[rndIndex].id}'`,
         );
+
+        if (findJobCate.length === 0) {
+          await manager.query(
+            `INSERT INTO "Job_Cate" values('${newJob.id}', ${cate[rndIndex].id})`,
+          );
+        }
       }
     }
   }
