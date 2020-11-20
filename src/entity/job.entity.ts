@@ -121,21 +121,13 @@ export class Job extends Base {
     category => category.jobs,
   )
   @JoinTable({
-<<<<<<< HEAD
-    name: 'job_category',
-=======
     name: 'Job_Cate',
->>>>>>> 4896b982fdf9be10e0f926fe7e4cce5a1fd63396
     joinColumn: {
       name: 'jobId',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
-<<<<<<< HEAD
-      name: 'categoryId',
-=======
       name: 'cateId',
->>>>>>> 4896b982fdf9be10e0f926fe7e4cce5a1fd63396
       referencedColumnName: 'id',
     },
   })

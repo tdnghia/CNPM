@@ -13,11 +13,11 @@ import {
 } from '@nestjs/common';
 import { PermissionService } from './permission.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CrudRequest, Override, ParsedRequest } from '@nestjsx/crud';
+import { CrudRequest, Override, ParsedBody, ParsedRequest } from '@nestjsx/crud';
 import { RolePermissionRepository } from './rolePermission.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/entity/role.entity';
-import { Repository } from 'typeorm';
+import { RelationQueryBuilder, Repository } from 'typeorm';
 import { Modules } from 'src/common/decorators/module.decorator';
 import { ModuleEnum } from 'src/common/enums/module.enum';
 import { Methods } from 'src/common/decorators/method.decorator';
@@ -121,4 +121,13 @@ export class PermissionController {
   async getAllrole() {
     return await this.roleRepository.find();
   }
+ 
+  @Put(':permissionId/updatePosession')
+  @Methods(methodEnum.UPDATE)
+  async updatePosession(
+    @Param('permissionId') permissionId: number,
+    @Body() dto: PermissionDTO
+    ) {
+      return this.repository.update({ roleId: dto.roleId, permissionId: permissionId}, dto);
+    }
 }
