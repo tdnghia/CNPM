@@ -128,6 +128,10 @@ export class PermissionController {
     @Param('permissionId') permissionId: number,
     @Body() dto: PermissionDTO
     ) {
+      if (dto.roleId == 1) {
+        throw new BadRequestException('Posession roleAdmin can not be Modified');
+      }
+
       return this.repository.update({ roleId: dto.roleId, permissionId: permissionId}, dto);
     }
 }
