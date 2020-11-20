@@ -13,11 +13,16 @@ import {
 } from '@nestjs/common';
 import { PermissionService } from './permission.service';
 import { ApiTags } from '@nestjs/swagger';
-import { CrudRequest, Override, ParsedRequest } from '@nestjsx/crud';
+import {
+  CrudRequest,
+  Override,
+  ParsedBody,
+  ParsedRequest,
+} from '@nestjsx/crud';
 import { RolePermissionRepository } from './rolePermission.repository';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Role } from 'src/entity/role.entity';
-import { Repository } from 'typeorm';
+import { RelationQueryBuilder, Repository } from 'typeorm';
 import { Modules } from 'src/common/decorators/module.decorator';
 import { ModuleEnum } from 'src/common/enums/module.enum';
 import { Methods } from 'src/common/decorators/method.decorator';
@@ -26,6 +31,9 @@ import { PermissionDTO } from './permission.dto';
 import { ValidationPipe } from 'src/shared/validation.pipe';
 import { RolePermission } from 'src/entity/role_permission.entity';
 import { get } from 'lodash';
+import { PermissionsEntity } from 'src/entity/permission.entity';
+import { ModulesEntity } from 'src/entity/module.entity';
+import { RoleDTO } from './role.dto';
 
 // @Crud({
 //   model: {
@@ -120,5 +128,54 @@ export class PermissionController {
   @Methods(methodEnum.READ)
   async getAllrole() {
     return await this.roleRepository.find();
+  }
+
+  @Put(':permissionId/updatePosession')
+  @Methods(methodEnum.UPDATE)
+  async updatePosession(
+    @Param('permissionId') permissionId: number,
+    @Body() dto: PermissionDTO,
+  ) {
+    if (dto.roleId == 1) {
+      throw new BadRequestException('Posession roleAdmin can not be Modified');
+    }
+
+    return this.repository.update(
+      { roleId: dto.roleId, permissionId: permissionId },
+      dto,
+    );
+  }
+
+  @Post('role')
+  @Methods(methodEnum.CREATE)
+  async createRole(@Body() dto: RoleDTO) {
+    try {
+      const newRole = this.roleRepository.create({
+        role: dto.role,
+      });
+      const role = await this.roleRepository.save(newRole);
+      for (let i = 0; i < dto.permissionPosession.length; i++) {
+        const newRolePermission = this.repository.create({
+          roleId: role.id,
+          permissionId: dto.permissionPosession[i].permissionId,
+          posession: dto.permissionPosession[i].posession,
+        });
+        await this.repository.save(newRolePermission);
+      }
+    } catch {
+      throw new InternalServerErrorException('Internal Server Error');
+    }
+  }
+
+  @Post()
+  @Methods(methodEnum.CREATE)
+  async createPermission(@Body() dto: PermissionsEntity) {
+    return this.permissionService.createPermission(dto);
+  }
+
+  @Post('module')
+  @Methods(methodEnum.CREATE)
+  async createModule(@Body() dto: ModulesEntity) {
+    return this.permissionService.createModule(dto);
   }
 }

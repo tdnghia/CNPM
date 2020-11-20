@@ -96,7 +96,7 @@ export class ArticlesController extends BaseController<Article> {
         dto.category = findCategory;
         dto.slug = getSlug(dto.title);
         const {title, content, salary_range, slug} = dto;
-        return await this.repository.update({ slug: result.slug }, {title, content, salary_range, slug});
+        return await this.repository.update({ slug: result.slug }, dto);
       } catch (error) {
         console.log(error);
         throw new HttpException(
