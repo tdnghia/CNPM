@@ -23,7 +23,6 @@ import {
 import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
 import { JobType } from '../common/enums/jobTypes.enum';
-import { Experience } from '../common/enums/experience.enum';
 import { enumToArray } from '../core/utils/helper';
 import { Category } from './category.entity';
 import { Address } from './address.entity';
@@ -72,11 +71,10 @@ export class Job extends Base {
   @Column({ type: 'enum', enum: JobType, nullable: true })
   type: string;
 
-  @ApiProperty({ example: '1' })
+  @ApiProperty({ example: 1 })
   @IsOptional({ groups: [UPDATE, CREATE] })
-  @IsIn(enumToArray(Experience))
-  @Column({ type: 'enum', enum: Experience, nullable: true })
-  experience: string;
+  @Column({ type: 'int', nullable: true })
+  experience: number;
 
   @ApiProperty({ example: 'YYYY-MM-DD' })
   @IsOptional({ groups: [UPDATE] })
