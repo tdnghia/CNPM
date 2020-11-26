@@ -131,6 +131,7 @@ export default class JobsSeeder implements Seeder {
           user: author[Math.floor(Math.random() * author.length)],
           category: catesArr,
           address: findAddress,
+          status: true,
         },
       }).create();
 

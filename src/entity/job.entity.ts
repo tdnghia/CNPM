@@ -19,6 +19,7 @@ import {
   IsDecimal,
   IsIn,
   IsBoolean,
+  IsInt,
 } from 'class-validator';
 import { User } from './user.entity';
 import { ApiProperty } from '@nestjs/swagger';
@@ -26,6 +27,7 @@ import { JobType } from '../common/enums/jobTypes.enum';
 import { enumToArray } from '../core/utils/helper';
 import { Category } from './category.entity';
 import { Address } from './address.entity';
+import { Exclude } from 'class-transformer';
 
 const { CREATE, UPDATE } = CrudValidationGroups;
 @Entity('jobs')
@@ -79,7 +81,6 @@ export class Job extends Base {
   @ApiProperty({ example: 'YYYY-MM-DD' })
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
-  @IsDateString()
   @Column({ type: 'date' })
   deadline: Date;
 
@@ -93,6 +94,7 @@ export class Job extends Base {
   introImg: string;
 
   @IsOptional({ groups: [UPDATE, CREATE] })
+  @Exclude()
   @IsBoolean()
   @Column({ type: 'boolean', default: false })
   status: boolean;
@@ -134,6 +136,20 @@ export class Job extends Base {
   /**
    * The relationship between Job and address
    */
+
+  @ApiProperty({ example: 48 })
+  @IsInt({ always: true })
+  city: number;
+
+  @ApiProperty({ example: '54 Nguyen Thi Minh Khai' })
+  @IsString()
+  street: string;
+
+  @ApiProperty({ example: 15.99119 })
+  longitude: number;
+
+  @ApiProperty({ example: 108.137062 })
+  latitude: number;
 
   @ManyToOne(
     type => Address,
