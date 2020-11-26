@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   InternalServerErrorException,
@@ -11,6 +12,8 @@ import { JobRepository } from './jobs.repository';
 import { getManager } from 'typeorm';
 import { UserRepository } from '../users/user.repository';
 import { CategoryRepository } from '../categories/categories.repository';
+import axios from 'axios';
+import { AddressRepository } from '../address/address.repository';
 
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
@@ -20,6 +23,7 @@ export class JobService extends TypeOrmCrudService<Job> {
     private readonly repository: JobRepository,
     private readonly userRepository: UserRepository,
     private readonly cateRepository: CategoryRepository,
+    private readonly addressRepository: AddressRepository,
   ) {
     super(repo);
   }
@@ -107,14 +111,39 @@ export class JobService extends TypeOrmCrudService<Job> {
 
   async createJob(dto: Job) {
     try {
+      const { latitude, longitude } = dto;
+      const provinces = await await axios.get(
+        'https://vapi.vnappmob.com/api/province',
+      );
+      let createAddr: any;
+      for (let index = 0; index < provinces.data.results.length; index++) {
+        console.log(provinces.data.results[index]);
+
+        if (provinces.data.results[index].province_id == dto.city) {
+          createAddr = this.addressRepository.create({
+            latitude,
+            longitude,
+            city: dto.city,
+            description: dto.street,
+          });
+          createAddr = await this.addressRepository.save(createAddr);
+          break;
+        }
+      }
+      console.log('add', createAddr);
+      if (!createAddr) {
+        return new BadRequestException('Address is invalid type');
+      }
       const findCateIds = await this.cateRepository.findByIds(dto.cateIds);
-      return await this.repository.save({
+      const createJob = this.repository.create({
         ...dto,
         categories: findCateIds,
+        address: createAddr,
       });
+      return await this.repository.save(createJob);
     } catch (error) {
       throw new InternalServerErrorException(
-        `INternal Server Error Exception ${error}`,
+        `Internal Server Error Exception ${error}`,
       );
     }
   }

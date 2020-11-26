@@ -1,17 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsString,
-  IsEmail,
-  IsNotEmpty,
-  IsBoolean,
-  IsDateString,
-  MinLength,
-  IsOptional,
-  IsInt,
-} from 'class-validator';
+import { IsString, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
 import { Match } from 'src/Helper/validation/match.decorator';
 import { CrudValidationGroups } from '@nestjsx/crud';
-const { CREATE, UPDATE } = CrudValidationGroups;
+const { CREATE } = CrudValidationGroups;
 export class LoginDTO {
   @ApiProperty({
     type: String,
@@ -74,11 +65,11 @@ export class EmployersDTO {
   name: string;
 
   @ApiProperty({ example: 'http://www.careernetwork.com' })
-  @IsOptional({groups: [CREATE]})
+  @IsOptional({ groups: [CREATE] })
   @IsString({ always: true })
   website: string;
 
-  @ApiProperty({ example: [32,31] })
+  @ApiProperty({ example: [32, 31] })
   city: Array<number>;
 
   @ApiProperty({ example: 'admin@gmail.com' })

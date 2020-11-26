@@ -6,7 +6,6 @@ import { getSlug } from '../../core/utils/helper';
 define(Job, (faker: typeof Faker, context: { payload?: Job }) => {
   const { payload } = context;
   const name = payload.name;
-  const slug = getSlug(name);
   const job = new Job();
   job.name = name;
   job.content = payload.content;
@@ -19,5 +18,6 @@ define(Job, (faker: typeof Faker, context: { payload?: Job }) => {
   job.user = payload.user;
   job.categories = payload.categories;
   job.address = payload.address;
+  job.status = payload.status;
   return job;
 });

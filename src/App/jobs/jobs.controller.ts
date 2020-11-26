@@ -10,12 +10,10 @@ import {
   Post,
   Put,
   UseGuards,
+  UsePipes,
+  Request,
 } from '@nestjs/common';
-import {
-  ApiBearerAuth,
-  ApiTags,
-  ApiUnauthorizedResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
   Crud,
   CrudRequest,
@@ -23,6 +21,7 @@ import {
   ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
+import { RequestQueryBuilder } from '@nestjsx/crud-request';
 import { BaseController } from 'src/common/Base/base.controller';
 import { Methods } from 'src/common/decorators/method.decorator';
 import { Modules } from 'src/common/decorators/module.decorator';
@@ -31,6 +30,7 @@ import { methodEnum } from 'src/common/enums/method.enum';
 import { ModuleEnum } from 'src/common/enums/module.enum';
 import { Job } from 'src/entity/job.entity';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
+import { ValidationPipe } from 'src/shared/validation.pipe';
 import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
@@ -51,13 +51,33 @@ import { JobService } from './jobs.service';
     join: {
       user: {
         eager: true,
-        exclude: ['password'],
+        exclude: [
+          'password',
+          'active',
+          'roleId',
+          'createdat',
+          'updatedat',
+          'deletedat',
+        ],
       },
       'user.profile': {
         eager: true,
+        exclude: [
+          'cvURL',
+          'quantity',
+          'experience',
+          'createdat',
+          'updatedat',
+          'deletedat',
+        ],
       },
       categories: {
         eager: true,
+        exclude: ['createdat', 'updatedat', 'deletedat', 'parentId'],
+      },
+      address: {
+        eager: true,
+        exclude: ['createdat', 'updatedat', 'deletedat'],
       },
     },
   },
@@ -75,6 +95,7 @@ export class JobsController extends BaseController<Job> {
 
   @Override('createOneBase')
   @Methods(methodEnum.CREATE)
+  @UsePipes(new ValidationPipe())
   async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
     return this.service.createJob(dto);
   }
@@ -94,6 +115,30 @@ export class JobsController extends BaseController<Job> {
   async getFavoritesByUser(@UserSession() user: any) {
     const userId = user.users.id;
     return this.service.getFavoritesByUser(userId);
+  }
+
+  @Put('active')
+  @Methods(methodEnum.UPDATE)
+  async activeJob(@UserSession() user: any) {}
+  @Get('inactive/all')
+  async getInactiveJob(@Request() req) {
+    const limit = req.query.hasOwnProperty('limit') ? req.query.limit : 10;
+    const page = req.query.hasOwnProperty('page') ? req.query.page : 1;
+    const sort = req.query.hasOwnProperty('sort') ? req.query.sort : null;
+
+    try {
+      return await this.repository.paginate(
+        {
+          limit,
+          page,
+          sort,
+        },
+        { relations: ['user'] },
+        { condition: { status: false } },
+      );
+    } catch (err) {
+      console.log('err', err);
+    }
   }
 
   @Get('applied')
