@@ -15,7 +15,6 @@ import fs = require('fs');
 import { promisify } from 'util';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { google } = require('googleapis');
-import utils from 'utils';
 
 @Controller('api/v1/upload')
 export class UploadController {

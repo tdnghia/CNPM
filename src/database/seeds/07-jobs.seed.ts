@@ -3,7 +3,6 @@ import { Connection, getManager } from 'typeorm';
 import { Factory, Seeder } from 'typeorm-seeding';
 import { Category } from '../../entity/category.entity';
 import * as jobsByAndroid from '../data/jobs.json';
-import { Experience } from '../../common/enums/experience.enum';
 import { JobType } from '../../common/enums/jobTypes.enum';
 import { enumToArray } from '../../core/utils/helper';
 import { Job } from '../../entity/job.entity';
@@ -65,7 +64,7 @@ export default class JobsSeeder implements Seeder {
     }
 
     const date = new Date();
-    const experienceArray = enumToArray(Experience);
+    const experienceArray = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
     const jobTypeArray = enumToArray(JobType);
 
     const androidCate = await cateRepository.findOne({

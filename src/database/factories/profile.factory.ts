@@ -12,6 +12,5 @@ define(Profile, (faker: typeof Faker, context: { payload?: Profile }) => {
   profile.profileUrl = payload.profileUrl;
   profile.introduction = payload.introduction;
   profile.pageURL = payload.pageURL;
-  profile.quantity = payload.quantity;
   return profile;
 });

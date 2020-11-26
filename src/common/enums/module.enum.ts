@@ -6,4 +6,5 @@ export enum ModuleEnum {
   PROFILE = 'PROFILE',
   ARTICLE = 'ARTICLE',
   ROLE = 'ROLE',
+  SKILL = 'SKILL',
 }
