@@ -7,14 +7,12 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
-  JoinColumn,
 } from 'typeorm';
 import { CrudValidationGroups } from '@nestjsx/crud';
 import { Base } from './base.entity';
 import {
   IsOptional,
   IsString,
-  IsDateString,
   IsNotEmpty,
   IsDecimal,
   IsIn,

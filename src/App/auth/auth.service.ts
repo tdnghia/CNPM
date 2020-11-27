@@ -18,7 +18,7 @@ import { sign } from 'jsonwebtoken';
 import { Payload } from 'src/types/payload';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
-import { Address } from 'src/entity/address.entity';
+import { Profile } from 'src/entity/profile.entity';
 
 @Injectable()
 export class AuthServices {
@@ -27,6 +27,8 @@ export class AuthServices {
     @InjectRepository(Role)
     private roleRepository: Repository<Role>,
     private addressRepository: AddressRepository,
+    @InjectRepository(Profile)
+    private readonly profileRepository: Repository<Profile>,
   ) {}
 
   async getRolesPermission(role: string) {
@@ -46,11 +48,19 @@ export class AuthServices {
     }
   }
 
-  async getProfile(id: string): Promise<User> {
-    const user = await this.userRepository.findOne({
+  async getProfile(id: string) {
+    const user = await this.userRepository.find({
       where: { id },
-      relations: ['profile', 'educations'],
-      select: ['email', 'id', 'role', 'roleId', 'createdat', 'updatedat'],
+      relations: ['profile', 'profile.profileSkill'],
+      select: [
+        'email',
+        'id',
+        'role',
+        'roleId',
+        'createdat',
+        'updatedat',
+        'profile',
+      ],
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -58,16 +68,11 @@ export class AuthServices {
     return user;
   }
 
-  // private toResponseObject(user: User) {
-  //   const {email,updatedAt, deletedAt, createdAt,educations,profile}:any = user
-
-  //   return ;
-  // }
   async login(data: LoginDTO) {
     try {
       const user: User = await this.validateUser(data);
-      if(!user.active) {
-        throw new UnauthorizedException('User is Unauthorized')
+      if (!user.active) {
+        throw new UnauthorizedException('User is Unauthorized');
       }
       user.ExpiredToken = false;
       this.userRepository.save(user);
@@ -82,7 +87,7 @@ export class AuthServices {
         email: user.email,
         profile: user.profile,
         role: user.role.role,
-        roleId: user.roleId
+        roleId: user.roleId,
       };
     } catch (error) {
       throw error;
@@ -97,8 +102,8 @@ export class AuthServices {
       const data = this.userRepository.create({
         ...dto,
       });
-       await this.userRepository.save(data);
-       return this.login({password: dto.password, email: dto.email});
+      await this.userRepository.save(data);
+      return this.login({ password: dto.password, email: dto.email });
     } catch (error) {
       if (error.code == '23505') {
         throw new HttpException(
@@ -115,7 +120,7 @@ export class AuthServices {
 
   async addLead(dto: EmployersDTO) {
     try {
-    const manager = getManager();
+      const manager = getManager();
       const cityArr = [];
       const provinces = await await axios.get(
         'https://vapi.vnappmob.com/api/province',
@@ -124,25 +129,28 @@ export class AuthServices {
 
       console.log('provine', provinces.data.results);
       // console.log('dto', typeof dto.city);
-      
+
       Object.keys(dto.city).forEach(key => {
-        const index = provinces.data.results.map(data=>data.province_id).indexOf(`${dto.city[key]}`);
-        if(index<0) { 
-             throw new BadRequestException('Invalid City');
-           }
-           cityArr.push({city: dto.city[key]});
-      })
+        const index = provinces.data.results
+          .map(data => data.province_id)
+          .indexOf(`${dto.city[key]}`);
+        if (index < 0) {
+          throw new BadRequestException('Invalid City');
+        }
+        cityArr.push({ city: dto.city[key] });
+      });
 
       const createAddress = await this.addressRepository.create(cityArr);
       await this.addressRepository.save(createAddress);
-      
 
       createAddress.forEach(addr => {
-          query += "'" + addr.id + "',";
-      })
+        query += "'" + addr.id + "',";
+      });
       query = query.slice(0, -1) + ')';
-      
-      const findAddress = await manager.query(`SELECT * FROM ${this.addressRepository.metadata.tableName} WHERE id in ${query} `)
+
+      const findAddress = await manager.query(
+        `SELECT * FROM ${this.addressRepository.metadata.tableName} WHERE id in ${query} `,
+      );
       const data = this.userRepository.create({
         roleId: 4,
         email: dto.email,
@@ -156,10 +164,10 @@ export class AuthServices {
         address: findAddress,
       });
       await this.userRepository.save(data);
-      const {email, id, role, roleId, profile, createdat, updatedat} = data
-      return {email, id, role, roleId, profile, createdat, updatedat};
+      const { email, id, role, roleId, profile, createdat, updatedat } = data;
+      return { email, id, role, roleId, profile, createdat, updatedat };
     } catch (error) {
-      if(error.status == 400) {
+      if (error.status == 400) {
         throw error;
       }
       if (error.code == '23505') {

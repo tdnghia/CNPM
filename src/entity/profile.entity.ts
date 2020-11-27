@@ -13,7 +13,6 @@ import {
   IsOptional,
   IsString,
   MaxLength,
-  IsIn,
   IsPhoneNumber,
 } from 'class-validator';
 import { CrudValidationGroups } from '@nestjsx/crud';
@@ -27,8 +26,8 @@ export class Profile extends Base {
   id: string;
 
   @IsOptional({ groups: [UPDATE] })
-  @IsString({ always: true})
-  @Column({ type: 'text', nullable: false})
+  @IsString({ always: true })
+  @Column({ type: 'text', nullable: false })
   name: string;
 
   @IsOptional({ groups: [CREATE, UPDATE] })
@@ -57,7 +56,7 @@ export class Profile extends Base {
   @Column({ type: 'varchar', length: 255, nullable: true })
   phone: string;
 
-  @Column({type: 'decimal', nullable: true})
+  @Column({ type: 'decimal', nullable: true })
   salaryRange: number;
 
   /** Relation to User */
@@ -72,10 +71,10 @@ export class Profile extends Base {
 
   @OneToMany(
     type => ProfileSkill,
-    profile_skill => profile_skill.profile,
+    profileSkill => profileSkill.profile,
     {
-      cascade: true
-    }
+      cascade: true,
+    },
   )
-  profile_skill: ProfileSkill[]
+  profileSkill: ProfileSkill[];
 }
