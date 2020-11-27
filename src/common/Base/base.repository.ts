@@ -15,14 +15,15 @@ interface ConditionType {
   condition: Record<string, any>;
 }
 export class BaseRepository<T> extends Repository<T> {
+  constructor() {
+    console.log('base Repo');
+    super();
+  }
   async paginate(
     options: PaginationOption,
     relations?: RelationType,
     condition?: ConditionType,
   ): Promise<Pagination<T>> {
-    console.log('option limit', options.limit);
-    console.log('option page', options.page);
-
     if (condition) {
       const [results, count] = await this.findAndCount({
         take: options.limit,

@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, UsePipes, Put, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  UsePipes,
+  Put,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthServices } from './auth.service';
 import {
   LoginDTO,
@@ -58,6 +66,8 @@ export class AuthController {
   @UseGuards(PossessionGuard)
   async getProfile(@UserSession() user: any) {
     const { id } = user.users;
+    console.log('user.users', user);
+
     return await this.authService.getProfile(id);
   }
 

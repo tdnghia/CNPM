@@ -22,7 +22,7 @@ export class Address extends Base {
   @IsOptional({ groups: [UPDATE] })
   @IsNotEmpty({ groups: [CREATE] })
   @Column({ type: 'int' })
-  city: string;
+  city: number;
 
   @ApiProperty({ example: ' ' })
   @IsOptional({ groups: [UPDATE] })

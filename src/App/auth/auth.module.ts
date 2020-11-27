@@ -8,10 +8,19 @@ import { PermissionsEntity } from 'src/entity/permission.entity';
 import { JWTStrategy } from './jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
-import {Address} from 'src/entity/address.entity';
+import { Address } from 'src/entity/address.entity';
+import { ProfileSkill } from 'src/entity/ProfileSkill.entity';
+import { Profile } from 'src/entity/profile.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Role, PermissionsEntity, Address]),
+    TypeOrmModule.forFeature([
+      User,
+      Role,
+      PermissionsEntity,
+      Address,
+      ProfileSkill,
+      Profile,
+    ]),
     PassportModule,
     JwtModule.register({
       secret: process.env.SECRET_KEY,
