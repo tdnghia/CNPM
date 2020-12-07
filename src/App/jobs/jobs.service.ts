@@ -156,4 +156,11 @@ export class JobService extends TypeOrmCrudService<Job> {
     const jobApplied = await this.repository.find({ where: { user } });
     console.log('jobApplied', jobApplied);
   }
+
+  async getAllFavoriteJob() {
+    const manager = getManager();
+    return await manager.query(
+      `SELECT distinct("jobId") FROM ${this.tableName}`, 
+    );
+  }
 }
