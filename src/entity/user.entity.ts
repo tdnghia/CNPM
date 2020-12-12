@@ -156,16 +156,6 @@ export class User extends Base {
   categories: Category[];
 
   /**
-   * The relation between User and education
-   */
-  @OneToMany(
-    type => EducationsEntity,
-    education => education.user,
-    { cascade: true },
-  )
-  educations: EducationsEntity[];
-
-  /**
    * The relation between User and Article
    */
   @OneToMany(
