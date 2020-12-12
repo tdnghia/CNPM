@@ -1,7 +1,6 @@
-import { define, factory } from 'typeorm-seeding';
+import { define } from 'typeorm-seeding';
 import * as Faker from 'faker';
 import { Job } from '../../entity/job.entity';
-import { getSlug } from '../../core/utils/helper';
 
 define(Job, (faker: typeof Faker, context: { payload?: Job }) => {
   const { payload } = context;
@@ -19,5 +18,6 @@ define(Job, (faker: typeof Faker, context: { payload?: Job }) => {
   job.categories = payload.categories;
   job.address = payload.address;
   job.status = payload.status;
+  job.introImg = payload.introImg;
   return job;
 });
