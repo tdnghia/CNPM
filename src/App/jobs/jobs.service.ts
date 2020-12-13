@@ -14,6 +14,7 @@ import { UserRepository } from '../users/user.repository';
 import { CategoryRepository } from '../categories/categories.repository';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
@@ -95,6 +96,7 @@ export class JobService extends TypeOrmCrudService<Job> {
         await manager.query(
           `INSERT INTO ${this.tableName} values('${jobId}','${userId}')`,
         );
+
         return { status: true };
       } else {
         throw new ConflictException('Job has been already applied');
@@ -160,7 +162,7 @@ export class JobService extends TypeOrmCrudService<Job> {
   async getAllFavoriteJob() {
     const manager = getManager();
     return await manager.query(
-      `SELECT distinct("jobId") FROM ${this.tableName}`, 
+      `SELECT distinct("jobId") FROM ${this.tableName}`,
     );
   }
 }
