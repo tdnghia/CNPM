@@ -26,6 +26,7 @@ import { UploadModule } from './App/upload/upload/upload.module';
 import { SkillModule } from './App/skill/skill.module';
 import { EducationModule } from './App/education/education/education.module';
 import { ExperienceModule } from './App/experience/experience.module';
+import { NotificationsModule } from './App/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { ExperienceModule } from './App/experience/experience.module';
     ArticlesModule,
     SkillModule,
     EducationModule,
+    NotificationsModule,
     ExperienceModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],

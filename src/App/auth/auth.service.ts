@@ -13,7 +13,14 @@ import { DeepPartial, getManager, Repository } from 'typeorm';
 import { Role } from 'src/entity/role.entity';
 import { UserRepository } from 'src/App/users/user.repository';
 import * as bcrypt from 'bcrypt';
-import { LoginDTO, RegisterDTO, ChangePwdDTO, EmployersDTO } from './auth.dto';
+import {
+  LoginDTO,
+  RegisterDTO,
+  ChangePwdDTO,
+  EmployersDTO,
+  UploadCV,
+  UpdatePhoneNumber,
+} from './auth.dto';
 import { sign } from 'jsonwebtoken';
 import { Payload } from 'src/types/payload';
 import axios from 'axios';
@@ -51,7 +58,7 @@ export class AuthServices {
   async getProfile(id: string) {
     const user = await this.userRepository.find({
       where: { id },
-      relations: ['profile', 'profile.profileSkill'],
+      relations: ['profile', 'profile.profileSkill', 'address'],
       select: [
         'email',
         'id',
@@ -101,6 +108,7 @@ export class AuthServices {
     try {
       const data = this.userRepository.create({
         ...dto,
+        profile: { name: dto.name },
       });
       await this.userRepository.save(data);
       return this.login({ password: dto.password, email: dto.email });
@@ -126,9 +134,6 @@ export class AuthServices {
         'https://vapi.vnappmob.com/api/province',
       );
       let query = '(';
-
-      console.log('provine', provinces.data.results);
-      // console.log('dto', typeof dto.city);
 
       Object.keys(dto.city).forEach(key => {
         const index = provinces.data.results
@@ -233,5 +238,37 @@ export class AuthServices {
       { password: await bcrypt.hash(body.password, 12) },
     );
     return { status: true };
+  }
+
+  async uploadCV(dto: UploadCV, userId: string) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['profile'],
+      });
+      await this.profileRepository.update(
+        { id: user.profile.id },
+        { cvURL: dto.cvUrl },
+      );
+      return { success: true };
+    } catch (err) {
+      throw new InternalServerErrorException('Server Error');
+    }
+  }
+
+  async updatePhoneNumber(dto: UpdatePhoneNumber, userId: string) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['profile'],
+      });
+      await this.profileRepository.update(
+        { id: user.profile.id },
+        { cvURL: dto.phone },
+      );
+      return { success: true };
+    } catch (err) {
+      throw new InternalServerErrorException('Server Error');
+    }
   }
 }

@@ -36,19 +36,6 @@ export default class CompanySeeder implements Seeder {
         const joinProvince = splitProvince.join('-');
 
         if (joinProvince === city) {
-          // const profile = await factory()
-          // const company = await getConnection()
-          //   .createQueryBuilder()
-          //   .insert()
-          //   .into(User)
-          //   .values({
-
-          //     password: await bcrypt.hash('admin', 12),
-          //     roleId: 4,
-          //   });
-          // await factory(User)({
-
-          // }).create();
           const profile = await factory(Profile)({
             payload: {
               name: companyProfile[index].name,

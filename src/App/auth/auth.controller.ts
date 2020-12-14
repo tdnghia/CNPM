@@ -6,6 +6,7 @@ import {
   UsePipes,
   Put,
   UseGuards,
+  Patch,
 } from '@nestjs/common';
 import { AuthServices } from './auth.service';
 import {
@@ -13,6 +14,8 @@ import {
   RegisterDTO,
   ChangePwdDTO,
   EmployersDTO,
+  UploadCV,
+  UpdatePhoneNumber,
 } from 'src/App/auth/auth.dto';
 import { ValidationPipe } from 'src/shared/validation.pipe';
 import { ApiTags } from '@nestjs/swagger';
@@ -61,13 +64,28 @@ export class AuthController {
     return this.authService.changePwd(user, body);
   }
 
+  @Patch('me/cv')
+  @Methods(methodEnum.UPDATE)
+  @UsePipes(new ValidationPipe())
+  async uploadCV(@Body() body: UploadCV, @UserSession() user) {
+    return await this.authService.uploadCV(body, user.users.id);
+  }
+
+  @Patch('me/phone')
+  @Methods(methodEnum.UPDATE)
+  @UsePipes(new ValidationPipe())
+  async updatePhoneNumber(
+    @Body() body: UpdatePhoneNumber,
+    @UserSession() user,
+  ) {
+    return await this.authService.updatePhoneNumber(body, user.users.id);
+  }
+
   @Get('me')
   @Methods(methodEnum.READ)
   @UseGuards(PossessionGuard)
   async getProfile(@UserSession() user: any) {
     const { id } = user.users;
-    console.log('user.users', user);
-
     return await this.authService.getProfile(id);
   }
 

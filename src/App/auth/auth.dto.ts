@@ -98,3 +98,19 @@ export class ChangePwdDTO {
   @Match('password', { message: 'Password does not match' })
   confirmPassword: string;
 }
+
+export class UploadCV {
+  @ApiProperty({
+    example: 'http://',
+  })
+  @IsString()
+  cvUrl: string;
+}
+
+export class UpdatePhoneNumber {
+  @ApiProperty({
+    example: 'http://',
+  })
+  @IsString()
+  phone: string;
+}
