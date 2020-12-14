@@ -35,7 +35,6 @@ import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
 import * as _ from 'lodash';
-import { count } from 'console';
 
 @Crud({
   model: {
@@ -116,18 +115,18 @@ export class JobsController extends BaseController<Job> {
 
   @Get('all')
   async getAll() {
-    const allJob:any = await this.repository.find();
+    const allJob: any = await this.repository.find();
     const favorite = await this.service.getAllFavoriteJob();
     const isFavorite = allJob.map(job => {
-      console.log(_.find(favorite, {jobId: job.id }));
-      if (_.find(favorite, {jobId: job.id })) {
+      console.log(_.find(favorite, { jobId: job.id }));
+      if (_.find(favorite, { jobId: job.id })) {
         job.isFavorite = true;
       } else {
         job.isFavorite = false;
       }
 
       return job;
-    })
+    });
     return isFavorite;
   }
 

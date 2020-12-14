@@ -1,4 +1,10 @@
-import { Controller, Get, NotFoundException, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  UseGuards,
+  UsePipes,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { BaseController } from 'src/common/Base/base.controller';
 import { Address } from 'src/entity/address.entity';
@@ -9,6 +15,9 @@ import { UserSession } from 'src/common/decorators/user.decorator';
 import { UserRepository } from '../users/user.repository';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { getManager } from 'typeorm';
+import { Modules } from 'src/common/decorators/module.decorator';
+import { ModuleEnum } from 'src/common/enums/module.enum';
+import { ValidationPipe } from 'src/shared/validation.pipe';
 
 @Crud({
   model: {
@@ -58,13 +67,23 @@ export class AddressController extends BaseController<Address> {
   }
 
   @Override('createOneBase')
+  @UseGuards(JwtAuthGuard)
+  @UsePipes(new ValidationPipe())
+  @ApiBearerAuth()
   async createOne(@UserSession() currentUser, @ParsedBody() body: Address) {
     const user = await this.userRepository.findOne({
       where: { id: currentUser.users.id },
     });
-    const result = this.repository.create(body);
+    const result = this.repository.create({ ...body });
     await this.repository.save(result);
-    return result;
+    const manager = getManager();
+    await manager.query(
+      `DELETE FROM user_address WHERE "userId" ='${user.id}'`,
+    );
+    await manager.query(
+      `INSERT INTO user_address values('${user.id}','${result.id}')`,
+    );
+    return await this.repository.save(result);
   }
   @Override('getManyBase')
   async getMany(@UserSession() currentUser) {
