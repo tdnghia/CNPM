@@ -264,7 +264,7 @@ export class AuthServices {
       });
       await this.profileRepository.update(
         { id: user.profile.id },
-        { cvURL: dto.phone },
+        { phone: dto.phone },
       );
       return { success: true };
     } catch (err) {
