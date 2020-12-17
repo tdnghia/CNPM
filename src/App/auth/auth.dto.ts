@@ -80,6 +80,7 @@ export class EmployersDTO {
   @IsString({ always: true })
   phone: string;
 }
+
 export class ChangePwdDTO {
   @ApiProperty({
     example: '12345678',
@@ -101,7 +102,7 @@ export class ChangePwdDTO {
 
 export class UploadCV {
   @ApiProperty({
-    example: 'http://',
+    example: 'http://test.com',
   })
   @IsString()
   cvUrl: string;
@@ -109,7 +110,7 @@ export class UploadCV {
 
 export class UpdatePhoneNumber {
   @ApiProperty({
-    example: 'http://',
+    example: '01233456789',
   })
   @IsString()
   phone: string;

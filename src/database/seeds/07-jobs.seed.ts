@@ -53,112 +53,112 @@ export default class JobsSeeder implements Seeder {
     /**
      * Seed Job data by skill (Android)
      */
-    for (let index = 0; index < jobsData.length; index++) {
-      const numberOfCate = this.getRndInteger(3, 6);
-      const date = new Date();
-      const experienceArray = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-      const jobTypeArray = enumToArray(JobType);
+    // for (let index = 0; index < jobsData.length; index++) {
+    //   const numberOfCate = this.getRndInteger(3, 6);
+    //   const date = new Date();
+    //   const experienceArray = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+    //   const jobTypeArray = enumToArray(JobType);
 
-      const currentDate = date.getDate();
-      const currentMonth = date.getMonth();
-      const currentYear = date.getFullYear();
-      const dueDate = this.getRndInteger(currentDate, 31);
+    //   const currentDate = date.getDate();
+    //   const currentMonth = date.getMonth();
+    //   const currentYear = date.getFullYear();
+    //   const dueDate = this.getRndInteger(currentDate, 31);
 
-      const provinces = await await axios.get(
-        'https://vapi.vnappmob.com/api/province',
-      );
-      const splitAddress = _.split(jobsData[index].address, ',');
+    //   const provinces = await await axios.get(
+    //     'https://vapi.vnappmob.com/api/province',
+    //   );
+    //   const splitAddress = _.split(jobsData[index].address, ',');
 
-      const city = this.getSlug(_.last(splitAddress));
-      const results = await axios.get(`${process.env.GEO_API_URL}`, {
-        params: {
-          address: jobsData[index].address,
-          key: `${process.env.GEO_API_KEY}`,
-        },
-      });
+    //   const city = this.getSlug(_.last(splitAddress));
+    //   const results = await axios.get(`${process.env.GEO_API_URL}`, {
+    //     params: {
+    //       address: jobsData[index].address,
+    //       key: `${process.env.GEO_API_KEY}`,
+    //     },
+    //   });
 
-      console.log('result', results);
+    //   console.log('result', results);
 
-      for (let track = 0; track < provinces.data.results.length; track++) {
-        const splitProvince = _.split(
-          this.getSlug(provinces.data.results[track].province_name),
-          '-',
-        );
-        if (_.indexOf(splitProvince, 'pho') >= 0) {
-          splitProvince.splice(0, 2);
-        } else {
-          splitProvince.splice(0, 1);
-        }
-        const joinProvince = splitProvince.join('-');
+    //   for (let track = 0; track < provinces.data.results.length; track++) {
+    //     const splitProvince = _.split(
+    //       this.getSlug(provinces.data.results[track].province_name),
+    //       '-',
+    //     );
+    //     if (_.indexOf(splitProvince, 'pho') >= 0) {
+    //       splitProvince.splice(0, 2);
+    //     } else {
+    //       splitProvince.splice(0, 1);
+    //     }
+    //     const joinProvince = splitProvince.join('-');
 
-        if (joinProvince === city) {
-          if (results.data.results.length >= 0) {
-            await factory(Address)({
-              payload: {
-                city: provinces.data.results[track].province_id,
-                description: jobsData[index].address,
-                latitude: results.data.results[0].geometry.location.lat,
-                longitude: results.data.results[0].geometry.location.lng,
-              },
-            }).create();
-          } else {
-            await factory(Address)({
-              payload: {
-                city: provinces.data.results[track].province_id,
-                description: jobsData[index].address,
-                latitude: null,
-                longitude: null,
-              },
-            }).create();
-          }
-          break;
-        }
-      }
+    //     if (joinProvince === city) {
+    //       if (results.data.results.length >= 0) {
+    //         await factory(Address)({
+    //           payload: {
+    //             city: provinces.data.results[track].province_id,
+    //             description: jobsData[index].address,
+    //             latitude: results.data.results[0].geometry.location.lat,
+    //             longitude: results.data.results[0].geometry.location.lng,
+    //           },
+    //         }).create();
+    //       } else {
+    //         await factory(Address)({
+    //           payload: {
+    //             city: provinces.data.results[track].province_id,
+    //             description: jobsData[index].address,
+    //             latitude: null,
+    //             longitude: null,
+    //           },
+    //         }).create();
+    //       }
+    //       break;
+    //     }
+    //   }
 
-      const findAddress = await addressRepository.findOne({
-        order: { createdat: 'DESC' },
-      });
-      const newJob = await factory(Job)({
-        payload: {
-          name: jobsData[index].name,
-          content: jobsData[index].content,
-          lowestWage:
-            lowestSalary[Math.floor(Math.random() * lowestSalary.length)],
-          highestWage:
-            highestSalary[Math.floor(Math.random() * highestSalary.length)],
-          description: jobsData[index].description[0],
-          type:
-            jobTypeArray[
-              Math.floor(Math.floor(Math.random() * jobTypeArray.length))
-            ],
-          experience:
-            experienceArray[
-              Math.floor(Math.floor(Math.random() * experienceArray.length))
-            ],
-          deadline: new Date(`${currentYear}-${currentMonth}-${dueDate}`),
-          user: author[Math.floor(Math.random() * author.length)],
-          address: findAddress,
-          status: true,
-          introImg: introImg[Math.floor(Math.random() * introImg.length)],
-        },
-      }).create();
+    //   const findAddress = await addressRepository.findOne({
+    //     order: { createdat: 'DESC' },
+    //   });
+    //   const newJob = await factory(Job)({
+    //     payload: {
+    //       name: jobsData[index].name,
+    //       content: jobsData[index].content,
+    //       lowestWage:
+    //         lowestSalary[Math.floor(Math.random() * lowestSalary.length)],
+    //       highestWage:
+    //         highestSalary[Math.floor(Math.random() * highestSalary.length)],
+    //       description: jobsData[index].description[0],
+    //       type:
+    //         jobTypeArray[
+    //           Math.floor(Math.floor(Math.random() * jobTypeArray.length))
+    //         ],
+    //       experience:
+    //         experienceArray[
+    //           Math.floor(Math.floor(Math.random() * experienceArray.length))
+    //         ],
+    //       deadline: new Date(`${currentYear}-${currentMonth}-${dueDate}`),
+    //       user: author[Math.floor(Math.random() * author.length)],
+    //       address: findAddress,
+    //       status: true,
+    //       introImg: introImg[Math.floor(Math.random() * introImg.length)],
+    //     },
+    //   }).create();
 
-      const manager = await getManager();
-      for (let index = 0; index < numberOfCate; index++) {
-        const rndIndex = Math.floor(Math.random() * count);
-        console.log('random', rndIndex);
+    //   const manager = await getManager();
+    //   for (let index = 0; index < numberOfCate; index++) {
+    //     const rndIndex = Math.floor(Math.random() * count);
+    //     console.log('random', rndIndex);
 
-        const findJobCate = await manager.query(
-          `SELECT * FROM "Job_Cate" WHERE "jobId"='${newJob.id}' AND "cateId"='${cate[rndIndex].id}'`,
-        );
+    //     const findJobCate = await manager.query(
+    //       `SELECT * FROM "Job_Cate" WHERE "jobId"='${newJob.id}' AND "cateId"='${cate[rndIndex].id}'`,
+    //     );
 
-        if (findJobCate.length === 0) {
-          await manager.query(
-            `INSERT INTO "Job_Cate" values('${newJob.id}', ${cate[rndIndex].id})`,
-          );
-        }
-      }
-    }
+    //     if (findJobCate.length === 0) {
+    //       await manager.query(
+    //         `INSERT INTO "Job_Cate" values('${newJob.id}', ${cate[rndIndex].id})`,
+    //       );
+    //     }
+    //   }
+    // }
   }
   getRndInteger = (min: number, max: number) => {
     return Math.floor(Math.random() * (max - min + 1)) + min;
