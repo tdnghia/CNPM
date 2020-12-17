@@ -34,6 +34,7 @@ import { ValidationPipe } from 'src/shared/validation.pipe';
 import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
+import * as _ from 'lodash';
 
 @Crud({
   model: {
@@ -103,10 +104,30 @@ export class JobsController extends BaseController<Job> {
   @Override('getManyBase')
   async getMany(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
     try {
+      // const favorite = await this.service.getAllFavoriteJob();
+      // const allJob = await this.base.getManyBase(req);
+      // for (let i = 0; i < count(allJob); i++)
       return await this.base.getManyBase(req);
     } catch (error) {
       throw new InternalServerErrorException('Internal Server Error');
     }
+  }
+
+  @Get('all')
+  async getAll() {
+    const allJob: any = await this.repository.find();
+    const favorite = await this.service.getAllFavoriteJob();
+    const isFavorite = allJob.map(job => {
+      console.log(_.find(favorite, { jobId: job.id }));
+      if (_.find(favorite, { jobId: job.id })) {
+        job.isFavorite = true;
+      } else {
+        job.isFavorite = false;
+      }
+
+      return job;
+    });
+    return isFavorite;
   }
 
   @Get('favorites')

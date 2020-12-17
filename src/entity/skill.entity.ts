@@ -8,7 +8,7 @@ export class Skill extends Base {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ApiProperty({ description: 'namesss of skill', example: 'BACKEND' })
+  @ApiProperty({ description: 'skill name', example: 'BACKEND' })
   @Column({ nullable: false, type: 'text' })
   name: string;
 

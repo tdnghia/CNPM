@@ -14,6 +14,7 @@ import { UserRepository } from '../users/user.repository';
 import { CategoryRepository } from '../categories/categories.repository';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
+import * as nodemailer from 'nodemailer';
 
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
@@ -81,7 +82,6 @@ export class JobService extends TypeOrmCrudService<Job> {
     if (!job) {
       throw new NotFoundException(`Job not found`);
     }
-    console.log('user', user);
 
     if (!user || user.roleId === 4) {
       throw new NotFoundException('Current User is not available');
@@ -95,6 +95,30 @@ export class JobService extends TypeOrmCrudService<Job> {
         await manager.query(
           `INSERT INTO ${this.tableName} values('${jobId}','${userId}')`,
         );
+        const transporter = nodemailer.createTransport({
+          service: 'gmail',
+          auth: {
+            user: 'tdnghia1011@gmail.com', // generated ethereal user
+            pass: 'shidoo1011', // generated ethereal password
+          },
+        });
+
+        // send mail with defined transport object
+        const mailOptions = {
+          from: '"Fred Foo 👻" <tdnghia1011@gmail.com>', // sender address
+          to: user.email, // list of receivers
+          subject: 'Thank you for joining the App CareerNetwork!', // Subject line
+          text: 'I am so glad you registered for the CareerNetwork', // plain text body
+          html: `<b>Here's your password for login as employee</b><p>Make sure you don't share this email public</p><b>password: </b><p>Our best</p><b>Twist Team</b>`, // html body
+        };
+
+        transporter.sendMail(mailOptions, function(error, info) {
+          if (error) {
+            console.log(error);
+          } else {
+            console.log('Email sent: ' + info.response);
+          }
+        });
         return { status: true };
       } else {
         throw new ConflictException('Job has been already applied');
@@ -155,5 +179,12 @@ export class JobService extends TypeOrmCrudService<Job> {
     }
     const jobApplied = await this.repository.find({ where: { user } });
     console.log('jobApplied', jobApplied);
+  }
+
+  async getAllFavoriteJob() {
+    const manager = getManager();
+    return await manager.query(
+      `SELECT distinct("jobId") FROM ${this.tableName}`,
+    );
   }
 }

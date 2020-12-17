@@ -113,9 +113,14 @@ export class CategoriesController implements CrudController<Category> {
     });
   }
 
+  @Get('allWithChildren')
+  async getAllWithChildren(@ParsedRequest() req: CrudRequest) {
+    return await this.repository.findTrees();
+  }
+
   @Get('all')
   async getAll(@ParsedRequest() req: CrudRequest) {
-    return await this.repository.findTrees();
+    return await this.repository.find();
   }
 
   @Override('getManyBase')

@@ -8,5 +8,7 @@ define(Address, (faker: typeof Faker, context: { payload?: Address }) => {
   const address = new Address();
   address.city = payload.city;
   address.description = payload.description;
+  address.latitude = payload.latitude;
+  address.longitude = payload.longitude;
   return address;
 });

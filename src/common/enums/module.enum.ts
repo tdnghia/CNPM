@@ -7,4 +7,7 @@ export enum ModuleEnum {
   ARTICLE = 'ARTICLE',
   ROLE = 'ROLE',
   SKILL = 'SKILL',
+  EDUCATION = 'EDUCATION',
+  EXPERIENCE = 'EXPERIENCE',
+  ADDRESS = 'ADDRESS',
 }

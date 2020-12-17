@@ -80,6 +80,7 @@ export class EmployersDTO {
   @IsString({ always: true })
   phone: string;
 }
+
 export class ChangePwdDTO {
   @ApiProperty({
     example: '12345678',
@@ -97,4 +98,20 @@ export class ChangePwdDTO {
   @IsString({ always: true })
   @Match('password', { message: 'Password does not match' })
   confirmPassword: string;
+}
+
+export class UploadCV {
+  @ApiProperty({
+    example: 'http://test.com',
+  })
+  @IsString()
+  cvUrl: string;
+}
+
+export class UpdatePhoneNumber {
+  @ApiProperty({
+    example: '01233456789',
+  })
+  @IsString()
+  phone: string;
 }
