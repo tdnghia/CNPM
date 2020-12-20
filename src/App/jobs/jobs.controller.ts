@@ -104,10 +104,37 @@ export class JobsController extends BaseController<Job> {
   @Override('getManyBase')
   async getMany(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
     try {
-      // const favorite = await this.service.getAllFavoriteJob();
+      const favorite = await this.service.getAllFavoriteJob();
       // const allJob = await this.base.getManyBase(req);
       // for (let i = 0; i < count(allJob); i++)
-      return await this.base.getManyBase(req);
+      const response: any = await this.base.getManyBase(req);
+
+      let isFavorite: Array<any>;
+
+      if (response.count) {
+        isFavorite = response.data.map(job => {
+          console.log('job', job);
+
+          if (_.find(favorite, { jobId: job.id })) {
+            job.isFavorite = true;
+          } else {
+            job.isFavorite = false;
+          }
+          return job;
+        });
+        return { ...response, data: isFavorite };
+      } else {
+        isFavorite = response.map(job => {
+          console.log(_.find(favorite, { jobId: job.id }));
+          if (_.find(favorite, { jobId: job.id })) {
+            job.isFavorite = true;
+          } else {
+            job.isFavorite = false;
+          }
+          return job;
+        });
+      }
+      return isFavorite;
     } catch (error) {
       throw new InternalServerErrorException('Internal Server Error');
     }
@@ -118,10 +145,12 @@ export class JobsController extends BaseController<Job> {
     const allJob: any = await this.repository.find();
     const currentDate = new Date().toLocaleDateString();
     const checkJobDeadline = allJob.filter(job => {
-      const parts = job.deadline.split("-");
-      const jobDeadline = new Date(`${parts[1]}/${parts[2]}/${parts[0]}`).toLocaleDateString();
+      const parts = job.deadline.split('-');
+      const jobDeadline = new Date(
+        `${parts[1]}/${parts[2]}/${parts[0]}`,
+      ).toLocaleDateString();
       return jobDeadline >= currentDate;
-    })
+    });
     const favorite = await this.service.getAllFavoriteJob();
     const isFavorite = checkJobDeadline.map(job => {
       console.log(_.find(favorite, { jobId: job.id }));
@@ -173,7 +202,7 @@ export class JobsController extends BaseController<Job> {
   async getSoftDeleteList() {
     const data = await this.repository.find({
       withDeleted: true,
-      where: { deletedat: Not(IsNull()) } 
+      where: { deletedat: Not(IsNull()) },
     });
     return data;
   }
