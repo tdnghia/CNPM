@@ -47,6 +47,7 @@ export class PermissionService {
           permission.permission.module.module,
         )}`;
         permissionRole.push({
+          module: permission.permission.module.module,
           scope: rolePermission,
           id: permission.permissionId,
           posession: permission.posession,
@@ -72,17 +73,13 @@ export class PermissionService {
           permission.module.module,
         )}`;
         permissionRole.push({
+          module: permission.module.module,
           id: permission.id,
           scope,
         });
       });
-
-      console.log('permiss', permissionRole);
-
       return permissionRole;
     } catch (error) {
-      console.log('err', error);
-
       throw new InternalServerErrorException('Inerternal Server Error');
     }
   }
@@ -98,8 +95,8 @@ export class PermissionService {
   async findPermission(moduleId: number, methodId: number) {
     try {
       const permission = this.permissionRepository.findOne({
-        where: { moduleId: moduleId, methodId: methodId }
-      })
+        where: { moduleId: moduleId, methodId: methodId },
+      });
 
       return permission ? true : false;
     } catch (error) {
@@ -110,13 +107,13 @@ export class PermissionService {
   async createPermission(data: PermissionsEntity) {
     try {
       const permission = await this.permissionRepository.findOne({
-        where: { moduleId: data.moduleId, methodId: data.methodId }
-      })
+        where: { moduleId: data.moduleId, methodId: data.methodId },
+      });
       if (permission) {
         return new BadRequestException('Permission already exists');
       }
-      const newPermission = await this.permissionRepository.create({ 
-        ...data
+      const newPermission = await this.permissionRepository.create({
+        ...data,
       });
       await this.permissionRepository.save(newPermission);
     } catch (error) {
@@ -155,21 +152,21 @@ export class PermissionService {
   async createModule(dto: ModulesEntity) {
     try {
       const newModule = this.moduleRepository.create({
-        ...dto
+        ...dto,
       });
       const module = await this.moduleRepository.save(newModule);
       console.log('here');
       for (let i = 1; i <= 4; i++) {
         const newPermission = await this.permissionRepository.create({
           moduleId: module.id,
-          methodId: i
-        })
+          methodId: i,
+        });
         const permission = await this.permissionRepository.save(newPermission);
 
         const newRolePermission = await this.repository.create({
           roleId: 1,
           permissionId: newPermission.id,
-          posession: "ANY"
+          posession: 'ANY',
         });
         await this.repository.save(newRolePermission);
       }
