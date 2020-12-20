@@ -162,6 +162,8 @@ export class PermissionController {
         });
         await this.repository.save(newRolePermission);
       }
+
+      return role;
     } catch {
       throw new InternalServerErrorException('Internal Server Error');
     }

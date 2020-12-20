@@ -61,6 +61,9 @@ export class Profile extends Base {
   @Column({ type: 'decimal', nullable: true })
   salaryRange: number;
 
+  @Column({ type: 'integer', default: 0 })
+  view: number;
+
   /** Relation to User */
 
   @OneToOne(
