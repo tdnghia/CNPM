@@ -116,8 +116,14 @@ export class JobsController extends BaseController<Job> {
   @Get('all')
   async getAll() {
     const allJob: any = await this.repository.find();
+    const currentDate = new Date().toLocaleDateString();
+    const checkJobDeadline = allJob.filter(job => {
+      const parts = job.deadline.split("-");
+      const jobDeadline = new Date(`${parts[1]}/${parts[2]}/${parts[0]}`).toLocaleDateString();
+      return jobDeadline >= currentDate;
+    })
     const favorite = await this.service.getAllFavoriteJob();
-    const isFavorite = allJob.map(job => {
+    const isFavorite = checkJobDeadline.map(job => {
       console.log(_.find(favorite, { jobId: job.id }));
       if (_.find(favorite, { jobId: job.id })) {
         job.isFavorite = true;
@@ -160,6 +166,16 @@ export class JobsController extends BaseController<Job> {
     } catch (err) {
       console.log('err', err);
     }
+  }
+
+  @Get('softdelete/all')
+  @Methods(methodEnum.READ)
+  async getSoftDeleteList() {
+    const data = await this.repository.find({
+      withDeleted: true,
+      where: { deletedat: Not(IsNull()) } 
+    });
+    return data;
   }
 
   @Get('applied')
