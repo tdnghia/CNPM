@@ -75,7 +75,7 @@ export class PermissionService {
         permissionRole.push({
           module: permission.module.module,
           id: permission.id,
-          scope,
+          action: scope,
         });
       });
       return permissionRole;
