@@ -70,8 +70,15 @@ export class JobService extends TypeOrmCrudService<Job> {
     );
 
     const jobIds = favoritesJob.map(job => job.jobId);
-    const jobByIds = await this.repository.findByIds(jobIds);
-    return jobByIds;
+    const jobByIds = await this.repository.findByIds(jobIds, {
+      relations: ['user', 'user.profile', 'categories'],
+    });
+    return jobByIds.map(job => {
+      delete job.user.password;
+      delete job.user.ExpiredToken;
+      delete job.user.ExpiredToken;
+      return job;
+    });
   }
 
   async appliesJob(jobId: string, userId: string) {
