@@ -173,12 +173,32 @@ export class JobService extends TypeOrmCrudService<Job> {
   }
 
   async getJobAppliedByCompany(userId: string) {
-    const user = await this.userRepository.findOne({ id: userId });
+    const user = await this.userRepository.findOne({
+      where: {id : userId},
+      relations: ['applied']
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const jobApplied = await this.repository.find({ where: { user } });
-    console.log('jobApplied', jobApplied);
+    return user.applied;
+  }
+
+  async getListUserAppliedJob(contributorId: string) {
+    const contributor = await this.userRepository.findOne({
+      where: {id : contributorId},
+    });
+    if (!contributor) {
+      throw new NotFoundException('User not found');
+    }
+    const allCompanyJob = await this.repo.find({
+      join: { alias: 'job', innerJoin: { user: 'job.user' } },
+      where: qb => {
+        qb.where('user.id = :id', { id: contributorId });
+      },
+      relations: ['appliedBy']
+    });
+    
+    return allCompanyJob;
   }
 
   async getAllFavoriteJob() {

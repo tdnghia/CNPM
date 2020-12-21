@@ -102,7 +102,6 @@ export class PermissionController {
         permissionId: data[i].permissionId,
         posession: data[i].posession,
       });
-      console.log('data i', data[i]);
       await this.repository.save(newRolePermission);
     }
     return;
