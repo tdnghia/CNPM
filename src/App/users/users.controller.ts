@@ -409,12 +409,12 @@ export class UserController extends BaseController<User> {
     }
   }
 
-  @Get(':id/profile')
-  @Methods(methodEnum.READ)
+  @Put(':id/profile')
+  @Methods(methodEnum.UPDATE)
   async getUserProfile(@Param('id') id: string)
   {
     try {
-      const user = await this.repository.find({
+      const user:any = await this.repository.find({
         where: { id },
         relations: ['profile', 'profile.profileSkill', 'address', 'profile.educationProfile'],
         select: [
@@ -427,14 +427,21 @@ export class UserController extends BaseController<User> {
           'profile',
         ],
       });
-      const findProfile = await this.profileRepository.findOne({
-        join: { alias: 'profile', innerJoin: { user: 'profile.user' } },
-        where: qb => {
-          qb.where('user.id = :id', { id: id });
-        }
-      });
-      await this.profileRepository.update({ id: findProfile.id }, { view: findProfile.view++});
-      console.log(findProfile);
+      await this.profileRepository.update(
+        { id: user.profile.id },
+        { view: user.profile.view++ },
+      );
+      console.log('here');
+
+      // const findProfile = await this.profileRepository.findOne({
+      //   join: { alias: 'profile', innerJoin: { user: 'profile.user' } },
+      //   where: qb => {
+      //     qb.where('user.id = :id', { id: id });
+      //   }
+      // });
+      // await this.profileRepository.update({ id: user.profile.id }, { view: findProfile.view++});
+      // console.log(findProfile);
+      
       if (!user) {
         throw new HttpException(
           {
@@ -452,6 +459,7 @@ export class UserController extends BaseController<User> {
 
       return user;
     } catch (error) {
+      console.log(error);
       throw new HttpException(
         {
           message: 'Internal Server error',

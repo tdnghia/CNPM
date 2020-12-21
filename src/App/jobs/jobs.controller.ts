@@ -218,9 +218,32 @@ export class JobsController extends BaseController<Job> {
   @Get('applied')
   @Methods(methodEnum.READ)
   async getAppliedJobByCompany(@UserSession() user: any) {
-    const userId = user.users.id;
-    return this.service.getJobAppliedByCompany(userId);
+    try {
+      const userId = user.users.id;
+      if (user.users.role === 'CONTRIBUTOR') {
+        return this.service.getListUserAppliedJob(userId);
+      } else if (user.users.role === 'USER') {
+        return this.service.getJobAppliedByCompany(userId);
+      } else {
+        throw new HttpException(
+          {
+            message: 'Internal Server Error',
+            status: HttpStatus.BAD_REQUEST,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: 'Internal Server Error',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
+
   @Override('getOneBase')
   async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
     try {
