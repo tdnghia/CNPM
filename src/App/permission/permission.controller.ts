@@ -34,6 +34,7 @@ import { get } from 'lodash';
 import { PermissionsEntity } from 'src/entity/permission.entity';
 import { ModulesEntity } from 'src/entity/module.entity';
 import { RoleDTO } from './role.dto';
+import { PerPosDTO } from './perpos.dto';
 
 // @Crud({
 //   model: {
@@ -57,15 +58,15 @@ export class PermissionController {
     return await this.permissionService.getAllPermission();
   }
 
-  @Get(':role')
+  @Get(':roleId')
   @Methods(methodEnum.READ)
   async GetAllPermissionByRole(
     @ParsedRequest() req: CrudRequest,
-    @Param('role') role: string,
+    @Param('roleId') roleId: number,
   ) {
     try {
       const rolePermissions: any = await this.permissionService.getRolesPermission(
-        role,
+        roleId,
       );
       return rolePermissions;
     } catch (error) {
@@ -76,36 +77,35 @@ export class PermissionController {
   @Put(':id')
   @Methods(methodEnum.UPDATE)
   @UsePipes(new ValidationPipe())
-  async updatePermission(@Param('id') id: number, @Body() data: PermissionDTO) {
-    if (data.roleId == 1) {
+  async updatePermission(@Param('id') id: number, @Body() data: PerPosDTO[]) {
+    if (id == 1) {
       throw new BadRequestException('Permission roleAdmin can not be Modified');
     }
     const role = await this.roleRepository.findOne({
-      where: { id: data.roleId },
+      where: { id: id },
     });
-    console.log('id', id);
-
-    const permission = await this.permissionService.getOne(id);
-
+    
     if (!role) {
       throw new NotFoundException('Role Not Found');
     }
+    const permission = await this.permissionService.getOne(id);
+    console.log('permission', permission);
 
-    if (!permission) {
-      throw new NotFoundException('Permission Not Found');
-    }
-    let rolePermission = await this.repository.findOne({
-      where: { roleId: role.id, permissionId: permission.id },
-    });
+    const findRolePermission = await this.repository.find({
+      where: { roleId: id }
+    })
+    await this.repository.remove(findRolePermission);
 
-    if (!rolePermission) {
-      rolePermission = new RolePermission();
+    for (let i = 0; i < data.length; i++) {
+      const newRolePermission = await this.repository.create({ 
+        roleId: id,
+        permissionId: data[i].permissionId,
+        posession: data[i].posession,
+      });
+      console.log('data i', data[i]);
+      await this.repository.save(newRolePermission);
     }
-    return await this.permissionService.saveRolePermission(
-      rolePermission,
-      data,
-      id,
-    );
+    return;
   }
 
   @Delete(':id')

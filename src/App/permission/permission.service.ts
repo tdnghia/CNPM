@@ -28,11 +28,11 @@ export class PermissionService {
     private readonly moduleRepository: Repository<ModulesEntity>,
     private readonly userRepository: UserRepository,
   ) {}
-  async getRolesPermission(role: string) {
+  async getRolesPermission(roleId: number) {
     try {
       const permissionRole = [];
       const rolePermissions = await this.roleRepository.findOne({
-        where: { role },
+        where: { id: roleId },
         relations: [
           'rolePermission',
           'rolePermission.permission',
