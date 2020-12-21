@@ -176,6 +176,7 @@ export class JobsController extends BaseController<Job> {
   @Put('active')
   @Methods(methodEnum.UPDATE)
   async activeJob(@UserSession() user: any) {}
+
   @Get('inactive/all')
   async getInactiveJob(@Request() req) {
     const limit = req.query.hasOwnProperty('limit') ? req.query.limit : 10;
