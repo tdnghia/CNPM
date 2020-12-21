@@ -23,6 +23,6 @@ export class UserService extends TypeOrmCrudService<User> {
       relations: ['role'],
       select: ['id', 'email', 'createdat', 'updatedat', 'role', 'roleId'],
     });
-    return new Pagination<User>({ results, total: count });
+    return new Pagination<User>({ results, total: count, limit: options.limit });
   }
 }

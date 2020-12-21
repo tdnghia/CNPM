@@ -8,9 +8,10 @@ import { Role } from '../../entity/role.entity';
 import { AuthModule } from '../auth/auth.module';
 import { Address } from 'src/entity/address.entity';
 import { UserRepository } from './user.repository';
+import { Profile } from '../../entity/profile.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserRepository, Role, Address]),
+    TypeOrmModule.forFeature([UserRepository, Role, Address, Profile]),
     AuthModule,
   ],
   controllers: [UserController],

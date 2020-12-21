@@ -176,6 +176,7 @@ export class JobsController extends BaseController<Job> {
   @Put('active')
   @Methods(methodEnum.UPDATE)
   async activeJob(@UserSession() user: any) {}
+
   @Get('inactive/all')
   async getInactiveJob(@Request() req) {
     const limit = req.query.hasOwnProperty('limit') ? req.query.limit : 10;
@@ -199,20 +200,51 @@ export class JobsController extends BaseController<Job> {
 
   @Get('softdelete/all')
   @Methods(methodEnum.READ)
-  async getSoftDeleteList() {
-    const data = await this.repository.find({
-      withDeleted: true,
-      where: { deletedat: Not(IsNull()) },
-    });
-    return data;
+  async getSoftDeleteList(@Request() req) {
+    const limit = req.query.hasOwnProperty('limit') ? req.query.limit : 10;
+    const page = req.query.hasOwnProperty('page') ? req.query.page : 1;
+    const sort = req.query.hasOwnProperty('sort') ? req.query.sort : null;
+    console.log('limit', limit);
+    return await this.repository.paginate(
+      {
+        limit,
+        page,
+        sort,
+      },
+      { relations: ['user'] },
+      { condition: { deletedat: Not(IsNull()) } },
+    );
   }
 
   @Get('applied')
   @Methods(methodEnum.READ)
   async getAppliedJobByCompany(@UserSession() user: any) {
-    const userId = user.users.id;
-    return this.service.getJobAppliedByCompany(userId);
+    try {
+      const userId = user.users.id;
+      if (user.users.role === 'CONTRIBUTOR') {
+        return this.service.getListUserAppliedJob(userId);
+      } else if (user.users.role === 'USER') {
+        return this.service.getJobAppliedByCompany(userId);
+      } else {
+        throw new HttpException(
+          {
+            message: 'Internal Server Error',
+            status: HttpStatus.BAD_REQUEST,
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: 'Internal Server Error',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
+
   @Override('getOneBase')
   async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
     try {
