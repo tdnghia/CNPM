@@ -25,7 +25,7 @@ import { User } from '../../entity/user.entity';
 import { UserService } from './users.service';
 import { UserRepository } from './user.repository';
 import { BaseController } from 'src/common/Base/base.controller';
-import { Not, IsNull } from 'typeorm';
+import { Not, IsNull, Repository } from 'typeorm';
 import { Modules } from 'src/common/decorators/module.decorator';
 import { Methods } from 'src/common/decorators/method.decorator';
 import { ValidationPipe } from 'src/shared/validation.pipe';
@@ -40,6 +40,8 @@ import * as nodemailer from 'nodemailer';
 import * as bcrypt from 'bcrypt';
 import * as _ from 'lodash';
 import { UserDTO } from './user.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Profile } from 'src/entity/profile.entity';
 
 @Crud({
   model: {
@@ -78,6 +80,8 @@ export class UserController extends BaseController<User> {
   constructor(
     public service: UserService,
     private readonly repository: UserRepository,
+    @InjectRepository(Profile)
+    private readonly profileRepository: Repository<Profile>,
   ) {
     super(repository);
   }
@@ -402,6 +406,60 @@ export class UserController extends BaseController<User> {
         },
         HttpStatus.NOT_FOUND,
       );
+    }
+  }
+
+  @Get(':id/profile')
+  @Methods(methodEnum.READ)
+  async getUserProfile(@Param('id') id: string)
+  {
+    try {
+      const user = await this.repository.find({
+        where: { id },
+        relations: ['profile', 'profile.profileSkill', 'address', 'profile.educationProfile'],
+        select: [
+          'email',
+          'id',
+          'role',
+          'roleId',
+          'createdat',
+          'updatedat',
+          'profile',
+        ],
+      });
+      const findProfile = await this.profileRepository.findOne({
+        join: { alias: 'profile', innerJoin: { user: 'profile.user' } },
+        where: qb => {
+          qb.where('user.id = :id', { id: id });
+        }
+      });
+      await this.profileRepository.update({ id: findProfile.id }, { view: findProfile.view++});
+      console.log(findProfile);
+      if (!user) {
+        throw new HttpException(
+          {
+            message: 'User not found',
+            error: HttpStatus.NOT_FOUND,
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      // const userProfile = this.profileRepository.find({
+      //   where: { user.id: id }
+      // })
+
+      // console.log(userProfile);
+
+      return user;
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: 'Internal Server error',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+      
     }
   }
 }

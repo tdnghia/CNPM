@@ -199,12 +199,20 @@ export class JobsController extends BaseController<Job> {
 
   @Get('softdelete/all')
   @Methods(methodEnum.READ)
-  async getSoftDeleteList() {
-    const data = await this.repository.find({
-      withDeleted: true,
-      where: { deletedat: Not(IsNull()) },
-    });
-    return data;
+  async getSoftDeleteList(@Request() req) {
+    const limit = req.query.hasOwnProperty('limit') ? req.query.limit : 10;
+    const page = req.query.hasOwnProperty('page') ? req.query.page : 1;
+    const sort = req.query.hasOwnProperty('sort') ? req.query.sort : null;
+    console.log('limit', limit);
+    return await this.repository.paginate(
+      {
+        limit,
+        page,
+        sort,
+      },
+      { relations: ['user'] },
+      { condition: { deletedat: Not(IsNull()) } },
+    );
   }
 
   @Get('applied')

@@ -32,7 +32,7 @@ export class BaseRepository<T> extends Repository<T> {
         relations: [...relations.relations],
         where: condition.condition,
       });
-      return new Pagination<T>({ results, total: count });
+      return new Pagination<T>({ results, total: count, limit: options.limit });
     }
   }
 }
