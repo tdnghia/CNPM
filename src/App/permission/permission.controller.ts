@@ -57,15 +57,15 @@ export class PermissionController {
     return await this.permissionService.getAllPermission();
   }
 
-  @Get(':role')
+  @Get(':roleId')
   @Methods(methodEnum.READ)
   async GetAllPermissionByRole(
     @ParsedRequest() req: CrudRequest,
-    @Param('role') role: string,
+    @Param('roleId') roleId: number,
   ) {
     try {
       const rolePermissions: any = await this.permissionService.getRolesPermission(
-        role,
+        roleId,
       );
       return rolePermissions;
     } catch (error) {
