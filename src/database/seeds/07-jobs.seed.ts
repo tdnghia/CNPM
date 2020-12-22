@@ -21,7 +21,6 @@ export default class JobsSeeder implements Seeder {
     const introImg = [
       'https://images.theconversation.com/files/344201/original/file-20200626-33533-13frdsm.jpg?ixlib=rb-1.1.0&q=45&auto=format&w=1200&h=675.0&fit=crop',
       'https://images.theconversation.com/files/349387/original/file-20200724-15-ldrybi.jpg?ixlib=rb-1.1.0&rect=23%2C535%2C5303%2C2651&q=45&auto=format&w=1356&h=668&fit=crop',
-      'https://lh3.googleusercontent.com/proxy/AFVWGohbRgfgc-iDOMfsu2y3RP4qfZpwUgGuVvO_SPCNFz0Y_35xe90gPTJEsUeZTYRugWZlS3uIHTe2HdqNGBO-qQA_DLv3tnLDyBnKZN4DjHTGg4CdVbMysfa2C6SCXoKjgKGDP-XcV59nyg',
       'https://www.simplilearn.com/ice9/free_resources_article_thumb/The_Best_Interview_Questions_to_Ask_an_Employer.jpg',
       'https://images.globest.com/contrib/content/uploads/sites/304/2020/05/empty-office-resized.jpg',
       'https://www.jll.com.hk/images/global/jll-apac-here-is-how-office-life-for-now-has-changed-teaser.jpg',
