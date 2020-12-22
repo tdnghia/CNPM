@@ -120,7 +120,7 @@ export default class JobsSeeder implements Seeder {
       const newJob = await factory(Job)({
         payload: {
           name: jobsData[index].name,
-          content: jobsData[index].content,
+          content: jobsData[index].content[0],
           lowestWage:
             lowestSalary[Math.floor(Math.random() * lowestSalary.length)],
           highestWage:
