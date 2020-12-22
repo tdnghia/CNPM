@@ -63,60 +63,60 @@ export default class JobsSeeder implements Seeder {
       const currentYear = date.getFullYear();
       const dueDate = this.getRndInteger(currentDate, 31);
 
-      // const provinces = await await axios.get(
-      //   'https://vapi.vnappmob.com/api/province',
-      // );
-      // const splitAddress = _.split(jobsData[index].address, ',');
+      const provinces = await await axios.get(
+        'https://vapi.vnappmob.com/api/province',
+      );
+      const splitAddress = _.split(jobsData[index].address, ',');
 
-      // const city = this.getSlug(_.last(splitAddress));
-      // const results = await axios.get(`${process.env.GEO_API_URL}`, {
-      //   params: {
-      //     address: jobsData[index].address,
-      //     key: `${process.env.GEO_API_KEY}`,
-      //   },
-      // });
+      const city = this.getSlug(_.last(splitAddress));
+      const results = await axios.get(`${process.env.GEO_API_URL}`, {
+        params: {
+          address: jobsData[index].address,
+          key: `${process.env.GEO_API_KEY}`,
+        },
+      });
 
-      // console.log('result', results);
+      console.log('result', results);
 
-      // for (let track = 0; track < provinces.data.results.length; track++) {
-      //   const splitProvince = _.split(
-      //     this.getSlug(provinces.data.results[track].province_name),
-      //     '-',
-      //   );
-      //   if (_.indexOf(splitProvince, 'pho') >= 0) {
-      //     splitProvince.splice(0, 2);
-      //   } else {
-      //     splitProvince.splice(0, 1);
-      //   }
-      //   const joinProvince = splitProvince.join('-');
+      for (let track = 0; track < provinces.data.results.length; track++) {
+        const splitProvince = _.split(
+          this.getSlug(provinces.data.results[track].province_name),
+          '-',
+        );
+        if (_.indexOf(splitProvince, 'pho') >= 0) {
+          splitProvince.splice(0, 2);
+        } else {
+          splitProvince.splice(0, 1);
+        }
+        const joinProvince = splitProvince.join('-');
 
-      //   if (joinProvince === city) {
-      //     if (results.data.results.length >= 0) {
-      //       await factory(Address)({
-      //         payload: {
-      //           city: provinces.data.results[track].province_id,
-      //           description: jobsData[index].address,
-      //           latitude: results.data.results[0].geometry.location.lat,
-      //           longitude: results.data.results[0].geometry.location.lng,
-      //         },
-      //       }).create();
-      //     } else {
-      //       await factory(Address)({
-      //         payload: {
-      //           city: provinces.data.results[track].province_id,
-      //           description: jobsData[index].address,
-      //           latitude: null,
-      //           longitude: null,
-      //         },
-      //       }).create();
-      //     }
-      //     break;
-      //   }
-      // }
+        if (joinProvince === city) {
+          if (results.data.results.length >= 0) {
+            await factory(Address)({
+              payload: {
+                city: provinces.data.results[track].province_id,
+                description: jobsData[index].address,
+                latitude: results.data.results[0].geometry.location.lat,
+                longitude: results.data.results[0].geometry.location.lng,
+              },
+            }).create();
+          } else {
+            await factory(Address)({
+              payload: {
+                city: provinces.data.results[track].province_id,
+                description: jobsData[index].address,
+                latitude: null,
+                longitude: null,
+              },
+            }).create();
+          }
+          break;
+        }
+      }
 
-      // const findAddress = await addressRepository.findOne({
-      //   order: { createdat: 'DESC' },
-      // });
+      const findAddress = await addressRepository.findOne({
+        order: { createdat: 'DESC' },
+      });
       const newJob = await factory(Job)({
         payload: {
           name: jobsData[index].name,
@@ -136,7 +136,7 @@ export default class JobsSeeder implements Seeder {
             ],
           deadline: new Date(`${currentYear}-${currentMonth}-${dueDate}`),
           user: author[Math.floor(Math.random() * author.length)],
-          // address: findAddress,
+          address: findAddress,
           status: true,
           introImg: introImg[Math.floor(Math.random() * introImg.length)],
         },
