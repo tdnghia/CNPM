@@ -173,9 +173,32 @@ export class JobsController extends BaseController<Job> {
     return this.service.getFavoritesByUser(userId);
   }
 
-  @Put('active')
+  @Put('active/:id')
   @Methods(methodEnum.UPDATE)
-  async activeJob(@UserSession() user: any) {}
+  async activeJob(@Param('id') id: string) {
+    try {
+      const findJob = await this.repository.findOne({ id: id});
+      if (!findJob) {
+        return new HttpException(
+          {
+            message: 'Job not found',
+            error: HttpStatus.NOT_FOUND,
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      
+      return await this.repository.update({ id: id}, { status: true });
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: 'Internal Server Error',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
 
   @Get('inactive/all')
   async getInactiveJob(@Request() req) {
@@ -191,7 +214,7 @@ export class JobsController extends BaseController<Job> {
           sort,
         },
         { relations: ['user'] },
-        { condition: { status: false } },
+        { condition: { status: false, deletedat: IsNull() } },
       );
     } catch (err) {
       console.log('err', err);
