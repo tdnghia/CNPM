@@ -76,8 +76,6 @@ export default class JobsSeeder implements Seeder {
         },
       });
 
-      console.log('result', results);
-
       for (let track = 0; track < provinces.data.results.length; track++) {
         const splitProvince = _.split(
           this.getSlug(provinces.data.results[track].province_name),
@@ -120,7 +118,6 @@ export default class JobsSeeder implements Seeder {
       const newJob = await factory(Job)({
         payload: {
           name: jobsData[index].name,
-          content: jobsData[index].content[0],
           lowestWage:
             lowestSalary[Math.floor(Math.random() * lowestSalary.length)],
           highestWage:
