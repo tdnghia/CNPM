@@ -35,6 +35,7 @@ import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
 import * as _ from 'lodash';
+import { UploadAvatar } from '../auth/auth.dto';
 
 @Crud({
   model: {
@@ -266,6 +267,13 @@ export class JobsController extends BaseController<Job> {
         HttpStatus.BAD_REQUEST,
       );
     }
+  }
+
+  @Get('applied/:id')
+  @Methods(methodEnum.READ)
+  async getOneJobAppliedUser(@Param('id') id: string)
+  {
+    return this.service.getOneJobAppliedUser(id);
   }
 
   @Override('getOneBase')

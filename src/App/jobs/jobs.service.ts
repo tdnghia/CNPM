@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -206,6 +208,43 @@ export class JobService extends TypeOrmCrudService<Job> {
     });
     
     return allCompanyJob;
+  }
+
+  async getOneJobAppliedUser(id: string) {
+    try {
+      const findJob = await this.repository.findOne(
+        { id : id },
+      );
+
+      if (!findJob) {
+        return new NotFoundException('Job not found');
+      }
+
+      const manager = getManager();
+      const appliedJob = await manager.query(
+        `SELECT * FROM job_applied WHERE "jobId"='${id}'`,
+      );
+
+      const userIds = appliedJob.map(user => user.userId);
+      const users = await this.userRepository.findByIds(userIds, {
+        relations: ['profile'],
+      });
+      return users.map(user => {
+        delete user.password;
+        delete user.ExpiredToken;
+        delete user.ExpiredToken;
+        return user;
+      });
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        {
+          message: 'Internal Server Error',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 
   async getAllFavoriteJob() {
