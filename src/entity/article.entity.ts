@@ -1,10 +1,11 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { CrudValidationGroups } from '@nestjsx/crud';
-import { IsInt, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsInt, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { extend } from 'lodash';
 import {
   Column,
   Entity,
+  JoinColumn,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -42,6 +43,8 @@ export class Article extends Base {
   @Column({ type: 'text' })
   slug: string;
 
+  @IsString({always: true})
+  userId: string;
   /**
    * The relationship between Article and Job
    */
@@ -49,6 +52,10 @@ export class Article extends Base {
     type => User,
     user => user.articles,
   )
+  // @JoinColumn({
+  //   name: 'userId',
+  //   referencedColumnName: 'userId'
+  // })
   user: User;
 
   @IsInt({always: true})
