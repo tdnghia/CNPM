@@ -19,6 +19,7 @@ import * as nodemailer from 'nodemailer';
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
   private tableName = 'job_favorite ';
+  private job_applied = 'job_applied';
   constructor(
     @InjectRepository(Job) repo,
     private readonly repository: JobRepository,
@@ -161,7 +162,6 @@ export class JobService extends TypeOrmCrudService<Job> {
           break;
         }
       }
-      console.log('add', createAddr);
       if (!createAddr) {
         return new BadRequestException('Address is invalid type');
       }
@@ -181,31 +181,55 @@ export class JobService extends TypeOrmCrudService<Job> {
 
   async getJobAppliedByCompany(userId: string) {
     const user = await this.userRepository.findOne({
-      where: {id : userId},
-      relations: ['applied']
+      where: { id: userId },
     });
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    return user.applied;
+    const manager = getManager();
+    const jobApplied = await manager.query(
+      `SELECT * FROM ${this.job_applied} WHERE "userId"='${userId}'`,
+    );
+
+    const jobIds = jobApplied.map(job => job.jobId);
+    const jobByIds = await this.repository.findByIds(jobIds, {
+      relations: ['user', 'user.profile', 'categories'],
+    });
+    return jobByIds.map(job => {
+      delete job.user.password;
+      delete job.user.ExpiredToken;
+      delete job.user.ExpiredToken;
+      return job;
+    });
   }
 
   async getListUserAppliedJob(contributorId: string) {
     const contributor = await this.userRepository.findOne({
-      where: {id : contributorId},
+      where: { id: contributorId },
     });
     if (!contributor) {
       throw new NotFoundException('User not found');
     }
-    const allCompanyJob = await this.repo.find({
+    const allCompanyJob: any = await this.repo.find({
       join: { alias: 'job', innerJoin: { user: 'job.user' } },
       where: qb => {
         qb.where('user.id = :id', { id: contributorId });
       },
-      relations: ['appliedBy']
+      relations: ['appliedBy', 'appliedBy.profile'],
     });
-    
-    return allCompanyJob;
+
+    return allCompanyJob.map(job => {
+      if (job.appliedBy.length > 0) {
+        const newJob = job.appliedBy.map(user => {
+          delete user.password;
+          delete user.role;
+          delete user.ExpiredToken;
+          return user;
+        });
+        return { ...job, newJob };
+      }
+      return job;
+    });
   }
 
   async getAllFavoriteJob() {
