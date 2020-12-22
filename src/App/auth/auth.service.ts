@@ -20,6 +20,7 @@ import {
   EmployersDTO,
   UploadCV,
   UpdatePhoneNumber,
+  UploadAvatar,
 } from './auth.dto';
 import { sign } from 'jsonwebtoken';
 import { Payload } from 'src/types/payload';
@@ -249,6 +250,22 @@ export class AuthServices {
       await this.profileRepository.update(
         { id: user.profile.id },
         { cvURL: dto.cvUrl },
+      );
+      return { success: true };
+    } catch (err) {
+      throw new InternalServerErrorException('Server Error');
+    }
+  }
+
+  async uploadAvatar(userId: string, dto: UploadAvatar) {
+    try {
+      const user = await this.userRepository.findOne({
+        where: { id: userId },
+        relations: ['profile'],
+      });
+      await this.profileRepository.update(
+        { id: user.profile.id },
+        { profileUrl: dto.profileUrl },
       );
       return { success: true };
     } catch (err) {

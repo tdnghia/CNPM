@@ -16,6 +16,7 @@ import {
   EmployersDTO,
   UploadCV,
   UpdatePhoneNumber,
+  UploadAvatar,
 } from 'src/App/auth/auth.dto';
 import { ValidationPipe } from 'src/shared/validation.pipe';
 import { ApiTags } from '@nestjs/swagger';
@@ -62,6 +63,13 @@ export class AuthController {
   @UsePipes(new ValidationPipe())
   async changePwd(@Body() body: ChangePwdDTO, @UserSession() user) {
     return this.authService.changePwd(user, body);
+  }
+
+  @Put('me/avatar')
+  @Methods(methodEnum.UPDATE)
+  @UsePipes(new ValidationPipe())
+  async uploadAvatar(@Body() body: UploadAvatar, @UserSession() user) {
+    return this.authService.uploadAvatar(user, body);
   }
 
   @Patch('me/cv')
