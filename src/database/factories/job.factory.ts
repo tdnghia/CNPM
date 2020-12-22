@@ -7,7 +7,6 @@ define(Job, (faker: typeof Faker, context: { payload?: Job }) => {
   const name = payload.name;
   const job = new Job();
   job.name = name;
-  job.content = payload.content;
   job.description = payload.description;
   job.lowestWage = payload.lowestWage;
   job.highestWage = payload.highestWage;
