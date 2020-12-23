@@ -108,6 +108,14 @@ export class UploadCV {
   cvUrl: string;
 }
 
+export class UploadAvatar {
+  @ApiProperty({
+    example: '/images/abc.jpg',
+  })
+  @IsString()
+  profileUrl: string;
+}
+
 export class UpdatePhoneNumber {
   @ApiProperty({
     example: '01233456789',

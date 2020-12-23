@@ -35,6 +35,8 @@ import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
 import * as _ from 'lodash';
+import { UploadAvatar } from '../auth/auth.dto';
+import { User } from '../users/user.decorator';
 
 @Crud({
   model: {
@@ -268,10 +270,22 @@ export class JobsController extends BaseController<Job> {
     }
   }
 
+  @Get('applied/:id')
+  @Methods(methodEnum.READ)
+  async getOneJobAppliedUser(@Param('id') id: string)
+  {
+    return this.service.getOneJobAppliedUser(id);
+  }
+
   @Override('getOneBase')
-  async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job, @UserSession() user) {
     try {
       const data = await this.base.getOneBase(req);
+      if (user) {
+        await this.service.updateRecently(user.users.id, data.id);
+      }
       return data;
     } catch (error) {
       throw new HttpException(
@@ -392,4 +406,6 @@ export class JobsController extends BaseController<Job> {
     const userId = user.users.id;
     return this.service.appliesJob(id, userId);
   }
+
+
 }
