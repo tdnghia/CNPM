@@ -22,7 +22,6 @@ import {
   ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
-import { RequestQueryBuilder } from '@nestjsx/crud-request';
 import { BaseController } from 'src/common/Base/base.controller';
 import { Methods } from 'src/common/decorators/method.decorator';
 import { Modules } from 'src/common/decorators/module.decorator';
@@ -36,7 +35,6 @@ import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
 import * as _ from 'lodash';
-import { PossessionGuard } from 'src/guards/posessionHandle.guard';
 import { JobDTO } from './job.dto';
 
 @Crud({
@@ -290,10 +288,25 @@ export class JobsController extends BaseController<Job> {
     }
   }
 
+  @Get('applied/:id')
+  @Methods(methodEnum.READ)
+  async getOneJobAppliedUser(@Param('id') id: string) {
+    return this.service.getOneJobAppliedUser(id);
+  }
+
   @Override('getOneBase')
-  async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getOne(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: Job,
+    @UserSession() user,
+  ) {
     try {
       const data = await this.base.getOneBase(req);
+      if (user) {
+        await this.service.updateRecently(user.users.id, data.id);
+      }
       return data;
     } catch (error) {
       throw new HttpException(

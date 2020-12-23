@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -15,7 +17,6 @@ import { CategoryRepository } from '../categories/categories.repository';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
 import * as nodemailer from 'nodemailer';
-import { AppliedJob } from 'src/entity/applied_job.entity';
 
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
@@ -257,10 +258,68 @@ export class JobService extends TypeOrmCrudService<Job> {
     }
   }
 
+  async getOneJobAppliedUser(id: string) {
+    try {
+      const findJob = await this.repository.findOne({ id: id });
+
+      if (!findJob) {
+        return new NotFoundException('Job not found');
+      }
+
+      const manager = getManager();
+      const appliedJob = await manager.query(
+        `SELECT * FROM job_applied WHERE "jobId"='${id}'`,
+      );
+
+      const userIds = appliedJob.map(user => user.userId);
+      const users = await this.userRepository.findByIds(userIds, {
+        relations: ['profile'],
+      });
+      return users.map(user => {
+        delete user.password;
+        delete user.ExpiredToken;
+        delete user.ExpiredToken;
+        return user;
+      });
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        {
+          message: 'Internal Server Error',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
   async getAllFavoriteJob() {
     const manager = getManager();
     return await manager.query(
       `SELECT distinct("jobId") FROM ${this.tableName}`,
     );
+  }
+
+  async updateRecently(userId: string, jobId: string) {
+    const manager = getManager();
+    const findRecently = await manager.query(
+      `SELECT * FROM job_recently where userId = '${userId}' and jobId = ${jobId}`,
+    );
+
+    if (!findRecently) {
+      await manager.query(
+        `INSERT INTO job_recently (userId, jobId) VALUES ('${userId}', '${jobId}')`,
+      );
+    }
+
+    const recentlyJobByUser = await manager.query(
+      `SELECT * FROM job_recently where userId = '${userId}' ORDER BY deletedat ASC`,
+    );
+
+    if (recentlyJobByUser.length > 10) {
+      await manager.query(
+        `DELETE FROM job_recently where userId = '${recentlyJobByUser[0].userId}' and jobId = '${recentlyJobByUser[0].jobId}'`,
+      );
+    }
   }
 }
