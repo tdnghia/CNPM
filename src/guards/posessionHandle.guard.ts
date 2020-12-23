@@ -33,6 +33,13 @@ export class PossessionGuard implements CanActivate {
     );
 
     const { scopePermission } = req;
+    console.log('data', data);
+    console.log('table', tableName[0]);
+    if (data.length == 0) {
+      return false;
+    }
+    console.log('user', data[0].userId);
+    console.log('req', req);
 
     if (scopePermission.search(/any/i) < 0 && data.length > 0) {
       return data[0].userId === req.user.users.id;

@@ -31,8 +31,6 @@ export class RoleGuard implements CanActivate {
       }
     });
 
-    console.log('scope', scopePermission);
-
     req.scopePermission = scopePermission;
 
     return _.includes(req.user.permission, scopePermission);

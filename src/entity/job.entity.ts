@@ -2,7 +2,6 @@ import {
   Entity,
   PrimaryGeneratedColumn,
   Column,
-  OneToOne,
   OneToMany,
   ManyToOne,
   ManyToMany,
@@ -26,6 +25,7 @@ import { enumToArray } from '../core/utils/helper';
 import { Category } from './category.entity';
 import { Address } from './address.entity';
 import { Exclude } from 'class-transformer';
+import { AppliedJob } from './applied_job.entity';
 
 const { CREATE, UPDATE } = CrudValidationGroups;
 @Entity('jobs')
@@ -176,23 +176,9 @@ export class Job extends Base {
   })
   favoriteBy: User[];
 
-  /**
-   * Apply Job
-   */
-  @ManyToMany(
-    type => User,
-    user => user.applied,
+  @OneToMany(
+    type => AppliedJob,
+    appliedJob => appliedJob.job,
   )
-  @JoinTable({
-    name: 'job_applied',
-    joinColumn: {
-      name: 'jobId',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'userId',
-      referencedColumnName: 'id',
-    },
-  })
   appliedBy: User[];
 }

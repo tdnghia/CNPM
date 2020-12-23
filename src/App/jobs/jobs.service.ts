@@ -15,11 +15,12 @@ import { CategoryRepository } from '../categories/categories.repository';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
 import * as nodemailer from 'nodemailer';
+import { AppliedJob } from 'src/entity/applied_job.entity';
 
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
   private tableName = 'job_favorite ';
-  private job_applied = 'job_applied';
+  private job_applied = 'applied_job';
   constructor(
     @InjectRepository(Job) repo,
     private readonly repository: JobRepository,
@@ -210,26 +211,50 @@ export class JobService extends TypeOrmCrudService<Job> {
     if (!contributor) {
       throw new NotFoundException('User not found');
     }
-    const allCompanyJob: any = await this.repo.find({
-      join: { alias: 'job', innerJoin: { user: 'job.user' } },
-      where: qb => {
-        qb.where('user.id = :id', { id: contributorId });
-      },
-      relations: ['appliedBy', 'appliedBy.profile'],
-    });
 
+    const allCompanyJob = await this.repository.find({
+      where: { user: contributor },
+      relations: ['appliedBy', 'appliedBy.user', 'appliedBy.user.profile'],
+    });
     return allCompanyJob.map(job => {
       if (job.appliedBy.length > 0) {
         const newJob = job.appliedBy.map(user => {
-          delete user.password;
-          delete user.role;
-          delete user.ExpiredToken;
+          delete user['user'].password;
+          delete user['user'].role;
+          delete user['user'].ExpiredToken;
           return user;
         });
         return { ...job, newJob };
       }
       return job;
     });
+  }
+
+  async acceptJob(userId: string, jobId: string, contriButeId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: contriButeId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const manager = getManager();
+
+    try {
+      const jobApplied = await manager.query(
+        `SELECT * FROM ${this.job_applied} WHERE "userId"='${userId}' AND "jobId"='${jobId}'`,
+      );
+      if (jobApplied.length > 0) {
+        await manager.query(
+          `UPDATE ${this.job_applied} set "status"= true WHERE "userId"='${userId}' AND "jobId"='${jobId}'`,
+        );
+        return {
+          status: true,
+        };
+      }
+    } catch (err) {
+      throw new NotFoundException(' not found');
+    }
   }
 
   async getAllFavoriteJob() {

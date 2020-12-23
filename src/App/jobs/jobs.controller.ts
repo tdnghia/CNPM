@@ -12,6 +12,7 @@ import {
   UseGuards,
   UsePipes,
   Request,
+  SetMetadata,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
@@ -35,6 +36,8 @@ import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
 import * as _ from 'lodash';
+import { PossessionGuard } from 'src/guards/posessionHandle.guard';
+import { JobDTO } from './job.dto';
 
 @Crud({
   model: {
@@ -86,6 +89,7 @@ import * as _ from 'lodash';
 @ApiTags('v1/jobs')
 @Controller('/api/v1/jobs')
 @Modules(ModuleEnum.JOB)
+@SetMetadata('entity', ['jobs'])
 export class JobsController extends BaseController<Job> {
   constructor(
     public service: JobService,
@@ -177,7 +181,7 @@ export class JobsController extends BaseController<Job> {
   @Methods(methodEnum.UPDATE)
   async activeJob(@Param('id') id: string) {
     try {
-      const findJob = await this.repository.findOne({ id: id});
+      const findJob = await this.repository.findOne({ id: id });
       if (!findJob) {
         return new HttpException(
           {
@@ -187,8 +191,8 @@ export class JobsController extends BaseController<Job> {
           HttpStatus.NOT_FOUND,
         );
       }
-      
-      return await this.repository.update({ id: id}, { status: true });
+
+      return await this.repository.update({ id: id }, { status: true });
     } catch (error) {
       throw new HttpException(
         {
@@ -218,6 +222,24 @@ export class JobsController extends BaseController<Job> {
       );
     } catch (err) {
       console.log('err', err);
+    }
+  }
+
+  @Put('accept/:id')
+  @Methods(methodEnum.UPDATE)
+  // @UseGuards(PossessionGuard)
+  @UsePipes(new ValidationPipe())
+  async acceptJob(
+    @Body() jobDTO: JobDTO,
+    @Param('id') id: string,
+    @UserSession() user: any,
+  ) {
+    try {
+      return await this.service.acceptJob(jobDTO.userId, id, user.users.id);
+    } catch (err) {
+      return {
+        status: false,
+      };
     }
   }
 
