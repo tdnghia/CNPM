@@ -17,6 +17,7 @@ import { CategoryRepository } from '../categories/categories.repository';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
 import * as nodemailer from 'nodemailer';
+import { UserSession } from 'src/common/decorators/user.decorator';
 
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
@@ -252,5 +253,28 @@ export class JobService extends TypeOrmCrudService<Job> {
     return await manager.query(
       `SELECT distinct("jobId") FROM ${this.tableName}`,
     );
+  }
+
+  async updateRecently(userId: string, jobId: string) {
+    const manager = getManager();
+    const findRecently = await manager.query(
+      `SELECT * FROM job_recently where userId = '${userId}' and jobId = ${jobId}`,
+    );
+    
+    if (!findRecently) {
+      await manager.query(
+        `INSERT INTO job_recently (userId, jobId) VALUES ('${userId}', '${jobId}')`
+      )
+    }
+
+    const recentlyJobByUser = await manager.query(
+      `SELECT * FROM job_recently where userId = '${userId}' ORDER BY deletedat ASC`
+    );
+
+    if (recentlyJobByUser.length > 10) {
+      await manager.query(
+        `DELETE FROM job_recently where userId = '${recentlyJobByUser[0].userId}' and jobId = '${recentlyJobByUser[0].jobId}'`
+      );
+    }
   }
 }

@@ -195,4 +195,24 @@ export class Job extends Base {
     },
   })
   appliedBy: User[];
+
+  /**
+   * Recently Job
+   */
+  @ManyToMany(
+    type => User,
+    user => user.recentlyJob,
+  )
+  @JoinTable({
+    name: 'job_recently',
+    joinColumn: {
+      name: 'jobId',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'userId',
+      referencedColumnName: 'id',
+    },
+  })
+  recentlyUser: User[];
 }

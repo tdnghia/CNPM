@@ -31,7 +31,7 @@ import { PossessionGuard } from 'src/guards/posessionHandle.guard';
 @Controller('api/v1/auth')
 @Modules(ModuleEnum.PROFILE)
 export class AuthController {
-  constructor(private authService: AuthServices) {}
+  constructor(private authService: AuthServices) { }
 
   @Get()
   // @UseGuards(AuthGuard)
@@ -102,5 +102,5 @@ export class AuthController {
   // async update
 
   @Post('forgot-password')
-  async forgotPassword() {}
+  async forgotPassword() { }
 }

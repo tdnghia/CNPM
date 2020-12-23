@@ -191,6 +191,16 @@ export class User extends Base {
     job => job.appliedBy,
   )
   applied: Job[];
+
+  /**
+   * Recently Job
+   */
+  @ManyToMany(
+    type => Job,
+    job => job.recentlyUser,
+  )
+  recentlyJob: Job[];
+
   /**
    * Exec Hash Function before Insert
    */
