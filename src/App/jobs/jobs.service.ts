@@ -1,6 +1,8 @@
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -19,7 +21,7 @@ import * as nodemailer from 'nodemailer';
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
   private tableName = 'job_favorite ';
-  private job_applied = 'job_applied';
+  private job_applied = 'applied_job';
   constructor(
     @InjectRepository(Job) repo,
     private readonly repository: JobRepository,
@@ -210,26 +212,89 @@ export class JobService extends TypeOrmCrudService<Job> {
     if (!contributor) {
       throw new NotFoundException('User not found');
     }
-    const allCompanyJob: any = await this.repo.find({
-      join: { alias: 'job', innerJoin: { user: 'job.user' } },
-      where: qb => {
-        qb.where('user.id = :id', { id: contributorId });
-      },
-      relations: ['appliedBy', 'appliedBy.profile'],
-    });
 
+    const allCompanyJob = await this.repository.find({
+      where: { user: contributor },
+      relations: ['appliedBy', 'appliedBy.user', 'appliedBy.user.profile'],
+    });
     return allCompanyJob.map(job => {
       if (job.appliedBy.length > 0) {
         const newJob = job.appliedBy.map(user => {
-          delete user.password;
-          delete user.role;
-          delete user.ExpiredToken;
+          delete user['jobId'];
+          delete user['userId'];
+          delete user['index_name'];
+          delete user['status'];
+          delete user['user'].password;
+          delete user['user'].role;
+          delete user['user'].ExpiredToken;
           return user;
         });
-        return { ...job, newJob };
+        return { ...job };
       }
       return job;
     });
+  }
+
+  async acceptJob(userId: string, jobId: string, contriButeId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: contriButeId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const manager = getManager();
+
+    try {
+      const jobApplied = await manager.query(
+        `SELECT * FROM ${this.job_applied} WHERE "userId"='${userId}' AND "jobId"='${jobId}'`,
+      );
+      if (jobApplied.length > 0) {
+        await manager.query(
+          `UPDATE ${this.job_applied} set "status"= true WHERE "userId"='${userId}' AND "jobId"='${jobId}'`,
+        );
+        return {
+          status: true,
+        };
+      }
+    } catch (err) {
+      throw new NotFoundException(' not found');
+    }
+  }
+
+  async getOneJobAppliedUser(id: string) {
+    try {
+      const findJob = await this.repository.findOne({ id: id });
+
+      if (!findJob) {
+        return new NotFoundException('Job not found');
+      }
+
+      const manager = getManager();
+      const appliedJob = await manager.query(
+        `SELECT * FROM applied_job WHERE "jobId"='${id}'`,
+      );
+
+      const userIds = appliedJob.map(user => user.userId);
+      const users = await this.userRepository.findByIds(userIds, {
+        relations: ['profile'],
+      });
+      return users.map(user => {
+        delete user.password;
+        delete user.ExpiredToken;
+        delete user.ExpiredToken;
+        return user;
+      });
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(
+        {
+          message: 'Internal Server Error',
+          status: HttpStatus.BAD_REQUEST,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 
   async getAllFavoriteJob() {
@@ -237,5 +302,28 @@ export class JobService extends TypeOrmCrudService<Job> {
     return await manager.query(
       `SELECT distinct("jobId") FROM ${this.tableName}`,
     );
+  }
+
+  async updateRecently(userId: string, jobId: string) {
+    const manager = getManager();
+    const findRecently = await manager.query(
+      `SELECT * FROM job_recently where userId = '${userId}' and jobId = ${jobId}`,
+    );
+
+    if (!findRecently) {
+      await manager.query(
+        `INSERT INTO job_recently (userId, jobId) VALUES ('${userId}', '${jobId}')`,
+      );
+    }
+
+    const recentlyJobByUser = await manager.query(
+      `SELECT * FROM job_recently where userId = '${userId}' ORDER BY deletedat ASC`,
+    );
+
+    if (recentlyJobByUser.length > 10) {
+      await manager.query(
+        `DELETE FROM job_recently where userId = '${recentlyJobByUser[0].userId}' and jobId = '${recentlyJobByUser[0].jobId}'`,
+      );
+    }
   }
 }

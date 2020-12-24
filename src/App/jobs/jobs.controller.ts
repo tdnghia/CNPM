@@ -12,6 +12,7 @@ import {
   UseGuards,
   UsePipes,
   Request,
+  SetMetadata,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import {
@@ -21,7 +22,6 @@ import {
   ParsedBody,
   ParsedRequest,
 } from '@nestjsx/crud';
-import { RequestQueryBuilder } from '@nestjsx/crud-request';
 import { BaseController } from 'src/common/Base/base.controller';
 import { Methods } from 'src/common/decorators/method.decorator';
 import { Modules } from 'src/common/decorators/module.decorator';
@@ -35,6 +35,7 @@ import { IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
 import * as _ from 'lodash';
+import { JobDTO } from './job.dto';
 
 @Crud({
   model: {
@@ -86,6 +87,7 @@ import * as _ from 'lodash';
 @ApiTags('v1/jobs')
 @Controller('/api/v1/jobs')
 @Modules(ModuleEnum.JOB)
+@SetMetadata('entity', ['jobs'])
 export class JobsController extends BaseController<Job> {
   constructor(
     public service: JobService,
@@ -177,7 +179,7 @@ export class JobsController extends BaseController<Job> {
   @Methods(methodEnum.UPDATE)
   async activeJob(@Param('id') id: string) {
     try {
-      const findJob = await this.repository.findOne({ id: id});
+      const findJob = await this.repository.findOne({ id: id });
       if (!findJob) {
         return new HttpException(
           {
@@ -187,8 +189,8 @@ export class JobsController extends BaseController<Job> {
           HttpStatus.NOT_FOUND,
         );
       }
-      
-      return await this.repository.update({ id: id}, { status: true });
+
+      return await this.repository.update({ id: id }, { status: true });
     } catch (error) {
       throw new HttpException(
         {
@@ -218,6 +220,24 @@ export class JobsController extends BaseController<Job> {
       );
     } catch (err) {
       console.log('err', err);
+    }
+  }
+
+  @Put('accept/:id')
+  @Methods(methodEnum.UPDATE)
+  // @UseGuards(PossessionGuard)
+  @UsePipes(new ValidationPipe())
+  async acceptJob(
+    @Body() jobDTO: JobDTO,
+    @Param('id') id: string,
+    @UserSession() user: any,
+  ) {
+    try {
+      return await this.service.acceptJob(jobDTO.userId, id, user.users.id);
+    } catch (err) {
+      return {
+        status: false,
+      };
     }
   }
 
@@ -268,10 +288,25 @@ export class JobsController extends BaseController<Job> {
     }
   }
 
+  @Get('applied/:id')
+  @Methods(methodEnum.READ)
+  async getOneJobAppliedUser(@Param('id') id: string) {
+    return this.service.getOneJobAppliedUser(id);
+  }
+
   @Override('getOneBase')
-  async getOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getOne(
+    @ParsedRequest() req: CrudRequest,
+    @ParsedBody() dto: Job,
+    @UserSession() user,
+  ) {
     try {
       const data = await this.base.getOneBase(req);
+      if (user) {
+        await this.service.updateRecently(user.users.id, data.id);
+      }
       return data;
     } catch (error) {
       throw new HttpException(
