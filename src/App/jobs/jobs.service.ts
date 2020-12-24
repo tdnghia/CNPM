@@ -220,12 +220,16 @@ export class JobService extends TypeOrmCrudService<Job> {
     return allCompanyJob.map(job => {
       if (job.appliedBy.length > 0) {
         const newJob = job.appliedBy.map(user => {
+          delete user['jobId'];
+          delete user['userId'];
+          delete user['index_name'];
+          delete user['status'];
           delete user['user'].password;
           delete user['user'].role;
           delete user['user'].ExpiredToken;
           return user;
         });
-        return { ...job, newJob };
+        return { ...job };
       }
       return job;
     });
@@ -268,7 +272,7 @@ export class JobService extends TypeOrmCrudService<Job> {
 
       const manager = getManager();
       const appliedJob = await manager.query(
-        `SELECT * FROM job_applied WHERE "jobId"='${id}'`,
+        `SELECT * FROM applied_job WHERE "jobId"='${id}'`,
       );
 
       const userIds = appliedJob.map(user => user.userId);
