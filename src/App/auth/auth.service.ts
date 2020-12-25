@@ -29,9 +29,11 @@ import { Payload } from 'src/types/payload';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
 import { Profile } from 'src/entity/profile.entity';
+import { Job } from 'src/entity/job.entity';
 
 @Injectable()
 export class AuthServices {
+  private job_recently = 'job_recently';
   constructor(
     private userRepository: UserRepository,
     @InjectRepository(Role)
@@ -39,6 +41,8 @@ export class AuthServices {
     private addressRepository: AddressRepository,
     @InjectRepository(Profile)
     private readonly profileRepository: Repository<Profile>,
+    @InjectRepository(Job)
+    private readonly jobRepository: Repository<Job>,
   ) {}
 
   async getRolesPermission(role: string) {
@@ -291,47 +295,20 @@ export class AuthServices {
     }
   }
 
-  async updateAddressUser(dto: UpdateAddress, userId: string) {
-    const user = await this.userRepository.findOne({ id: userId });
-    if (!user) {
-      throw new NotFoundException('User not Found');
-    }
-    const provinces = await await axios.get(
-      'https://vapi.vnappmob.com/api/province',
-    );
-    console.log('province', provinces.data.results);
-    const province = _.find(provinces.data.results, function(o) {
-      return o.province_id == dto.city;
-    });
-    if (!province) {
-      throw new BadRequestException('Invalid City');
-    }
-    // await this.profileRepository.update(
-    //   { id: user.profile.id },
-    //   {
+  async getRecently(id: string) {
+    try {
+      const manager = getManager();
 
-    //   }
-    // );
-    const address = await this.addressRepository.create({
-      city: dto.city,
-      description: dto.description,
-    });
-    await this.addressRepository.save(address);
-    await this.userRepository.update(
-      { id: user.id },
-      {
-        address: [{ ...address }],
-      },
-    );
-    return {
-      status: true,
-    };
-    // const address = this.addressRepository.update({
-    //   user,
-    // },
-    //   {
-    //   city: province.province_id,
-    //   description: dto.description
-    // })
+      const jobRecently = await manager.query(
+        `SELECT "jobId" FROM ${this.job_recently} WHERE "userId"='${id}'`,
+      );
+      const jobId = jobRecently.map(job => {return job.jobId});
+      console.log('recently', jobId);
+      // console.log('job 1', this.jobRepository.findOne({ }))
+      return await this.jobRepository.findByIds(jobId);
+    } catch (err) {
+      throw new InternalServerErrorException('Server Error');
+    }
+
   }
 }
