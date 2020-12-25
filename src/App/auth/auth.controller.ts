@@ -90,13 +90,6 @@ export class AuthController {
     return await this.authService.updatePhoneNumber(body, user.users.id);
   }
 
-  @Patch('me/address')
-  @Methods(methodEnum.UPDATE)
-  @UsePipes(new ValidationPipe())
-  async updateAddressUser(@Body() body: UpdateAddress, @UserSession() user) {
-    return await this.authService.updateAddressUser(body, user.users.id);
-  }
-
   @Get('me')
   @Methods(methodEnum.READ)
   @UseGuards(PossessionGuard)
