@@ -39,10 +39,8 @@ import { JobDTO } from './job.dto';
 import * as nodemailer from 'nodemailer';
 import { User } from 'src/entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-=======
 import { GeoDTO } from './geo.dto';
 import { getDistance } from 'geolib';
-
 
 @Crud({
   model: {
@@ -243,8 +241,10 @@ export class JobsController extends BaseController<Job> {
     try {
       // console.log('jere');
       // return;
-      const job = await this.repository.findOne({id: id});
-      const acceptedUser = await this.userRepository.findOne({ id: jobDTO.userId});
+      const job = await this.repository.findOne({ id: id });
+      const acceptedUser = await this.userRepository.findOne({
+        id: jobDTO.userId,
+      });
       // return acceptedUser;
       await this.service.acceptJob(jobDTO.userId, id, user.users.id);
       const transporter = nodemailer.createTransport({
@@ -347,7 +347,6 @@ export class JobsController extends BaseController<Job> {
   }
 
   @Override('getOneBase')
-  @ApiBearerAuth()
   async getOne(@ParsedRequest() req: CrudRequest) {
     try {
       const data = await this.base.getOneBase(req);

@@ -302,13 +302,14 @@ export class AuthServices {
       const jobRecently = await manager.query(
         `SELECT "jobId" FROM ${this.job_recently} WHERE "userId"='${id}'`,
       );
-      const jobId = jobRecently.map(job => {return job.jobId});
+      const jobId = jobRecently.map(job => {
+        return job.jobId;
+      });
       console.log('recently', jobId);
       // console.log('job 1', this.jobRepository.findOne({ }))
       return await this.jobRepository.findByIds(jobId);
     } catch (err) {
       throw new InternalServerErrorException('Server Error');
     }
-
   }
 }
