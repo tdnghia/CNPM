@@ -371,8 +371,12 @@ export class JobsController extends BaseController<Job> {
       if (user.users) {
         await this.service.updateRecently(user.users.id, id);
       }
-      const job = await this.repository.findOne({ id });
+      const job = await this.repository.findOne({
+        where: { id },
+        relations: ['user', 'user.profile', 'categories', 'address'],
+      });
 
+      delete job.user.password;
       const jobApplied = await manager.query(
         `SELECT * FROM applied_job WHERE "userId"='${user.users.id}' and "jobId" = '${id}'`,
       );
