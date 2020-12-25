@@ -311,7 +311,6 @@ export class JobsController extends BaseController<Job> {
   }
 
   @Override('getOneBase')
-  @ApiBearerAuth()
   async getOne(@ParsedRequest() req: CrudRequest) {
     try {
       const data = await this.base.getOneBase(req);
