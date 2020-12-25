@@ -123,3 +123,15 @@ export class UpdatePhoneNumber {
   @IsString()
   phone: string;
 }
+
+export class UpdateAddress {
+  @ApiProperty({
+    example: '01233456789',
+  })
+  city: number;
+
+  @ApiProperty({
+    example: '25 Le Do',
+  })
+  description: string;
+}

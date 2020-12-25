@@ -17,6 +17,7 @@ import {
   UploadCV,
   UpdatePhoneNumber,
   UploadAvatar,
+  UpdateAddress,
 } from 'src/App/auth/auth.dto';
 import { ValidationPipe } from 'src/shared/validation.pipe';
 import { ApiTags } from '@nestjs/swagger';
@@ -31,7 +32,7 @@ import { PossessionGuard } from 'src/guards/posessionHandle.guard';
 @Controller('api/v1/auth')
 @Modules(ModuleEnum.PROFILE)
 export class AuthController {
-  constructor(private authService: AuthServices) { }
+  constructor(private authService: AuthServices) {}
 
   @Get()
   // @UseGuards(AuthGuard)
@@ -89,6 +90,13 @@ export class AuthController {
     return await this.authService.updatePhoneNumber(body, user.users.id);
   }
 
+  @Patch('me/address')
+  @Methods(methodEnum.UPDATE)
+  @UsePipes(new ValidationPipe())
+  async updateAddressUser(@Body() body: UpdateAddress, @UserSession() user) {
+    return await this.authService.updateAddressUser(body, user.users.id);
+  }
+
   @Get('me')
   @Methods(methodEnum.READ)
   @UseGuards(PossessionGuard)
@@ -110,5 +118,5 @@ export class AuthController {
   // async update
 
   @Post('forgot-password')
-  async forgotPassword() { }
+  async forgotPassword() {}
 }

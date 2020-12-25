@@ -13,6 +13,7 @@ import { DeepPartial, getManager, Repository } from 'typeorm';
 import { Role } from 'src/entity/role.entity';
 import { UserRepository } from 'src/App/users/user.repository';
 import * as bcrypt from 'bcrypt';
+import * as _ from 'lodash';
 import {
   LoginDTO,
   RegisterDTO,
@@ -21,6 +22,7 @@ import {
   UploadCV,
   UpdatePhoneNumber,
   UploadAvatar,
+  UpdateAddress,
 } from './auth.dto';
 import { sign } from 'jsonwebtoken';
 import { Payload } from 'src/types/payload';
@@ -307,5 +309,6 @@ export class AuthServices {
     } catch (err) {
       throw new InternalServerErrorException('Server Error');
     }
+
   }
 }
