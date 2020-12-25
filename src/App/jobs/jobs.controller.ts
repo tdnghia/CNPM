@@ -36,6 +36,8 @@ import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
 import * as _ from 'lodash';
 import { JobDTO } from './job.dto';
+import { GeoDTO } from './geo.dto';
+import { getDistance } from 'geolib';
 
 @Crud({
   model: {
@@ -225,7 +227,6 @@ export class JobsController extends BaseController<Job> {
 
   @Put('accept/:id')
   @Methods(methodEnum.UPDATE)
-  // @UseGuards(PossessionGuard)
   @UsePipes(new ValidationPipe())
   async acceptJob(
     @Body() jobDTO: JobDTO,
@@ -294,6 +295,21 @@ export class JobsController extends BaseController<Job> {
     return this.service.getOneJobAppliedUser(id);
   }
 
+  @Get('nearest/all')
+  async getJobNearest(@Body() geoDTO: GeoDTO) {
+    // console.log('geo', geoDTO);
+    const jobs = await this.repository.find({
+      relations: ['address'],
+    });
+    return jobs.filter(job => {
+      const distance = getDistance(
+        { latitude: job.address.latitude, longitude: job.address.longitude },
+        { latitude: geoDTO.lat, longitude: geoDTO.long },
+      );
+      if (distance < geoDTO.distance * 1000) return job;
+    });
+  }
+
   @Override('getOneBase')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -304,11 +320,6 @@ export class JobsController extends BaseController<Job> {
   ) {
     try {
       const data = await this.base.getOneBase(req);
-      console.log('--->user', user);
-
-      // if (user) {
-      //   await this.service.updateRecently(user.users.id, data.id);
-      // }
       return data;
     } catch (error) {
       throw new HttpException(
