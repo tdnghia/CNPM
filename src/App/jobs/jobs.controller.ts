@@ -31,11 +31,13 @@ import { ModuleEnum } from 'src/common/enums/module.enum';
 import { Job } from 'src/entity/job.entity';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { ValidationPipe } from 'src/shared/validation.pipe';
-import { IsNull, Not } from 'typeorm';
+import { getManager, IsNull, Not } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
 import * as _ from 'lodash';
 import { JobDTO } from './job.dto';
+import { GeoDTO } from './geo.dto';
+import { getDistance } from 'geolib';
 
 @Crud({
   model: {
@@ -225,7 +227,6 @@ export class JobsController extends BaseController<Job> {
 
   @Put('accept/:id')
   @Methods(methodEnum.UPDATE)
-  // @UseGuards(PossessionGuard)
   @UsePipes(new ValidationPipe())
   async acceptJob(
     @Body() jobDTO: JobDTO,
@@ -294,6 +295,21 @@ export class JobsController extends BaseController<Job> {
     return this.service.getOneJobAppliedUser(id);
   }
 
+  @Get('nearest/all')
+  async getJobNearest(@Body() geoDTO: GeoDTO) {
+    // console.log('geo', geoDTO);
+    const jobs = await this.repository.find({
+      relations: ['address'],
+    });
+    return jobs.filter(job => {
+      const distance = getDistance(
+        { latitude: job.address.latitude, longitude: job.address.longitude },
+        { latitude: geoDTO.lat, longitude: geoDTO.long },
+      );
+      if (distance < geoDTO.distance * 1000) return job;
+    });
+  }
+
   @Override('getOneBase')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -304,11 +320,40 @@ export class JobsController extends BaseController<Job> {
   ) {
     try {
       const data = await this.base.getOneBase(req);
-      if (user) {
-        await this.service.updateRecently(user.users.id, data.id);
-      }
       return data;
     } catch (error) {
+      throw new HttpException(
+        {
+          message: 'Job not found',
+          error: HttpStatus.NOT_FOUND,
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+  }
+
+  @Get('getOne/recently/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getOneRecently(@Param('id') id: string, @UserSession() user) {
+    try {
+      const manager = getManager();
+      if (user.users) {
+        await this.service.updateRecently(user.users.id, id);
+      }
+      const job = await this.repository.findOne({ id });
+
+      const jobApplied = await manager.query(
+        `SELECT * FROM applied_job WHERE "userId"='${user.users.id}' and "jobId" = '${id}'`,
+      );
+
+      if (jobApplied.length > 0) {
+        return { ...job, applied: true };
+      }
+      return { ...job, applied: false };
+    } catch (error) {
+      console.log('err', error);
+
       throw new HttpException(
         {
           message: 'Job not found',

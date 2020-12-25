@@ -13,6 +13,7 @@ import { DeepPartial, getManager, Repository } from 'typeorm';
 import { Role } from 'src/entity/role.entity';
 import { UserRepository } from 'src/App/users/user.repository';
 import * as bcrypt from 'bcrypt';
+import * as _ from 'lodash';
 import {
   LoginDTO,
   RegisterDTO,
@@ -21,6 +22,7 @@ import {
   UploadCV,
   UpdatePhoneNumber,
   UploadAvatar,
+  UpdateAddress,
 } from './auth.dto';
 import { sign } from 'jsonwebtoken';
 import { Payload } from 'src/types/payload';
@@ -287,5 +289,49 @@ export class AuthServices {
     } catch (err) {
       throw new InternalServerErrorException('Server Error');
     }
+  }
+
+  async updateAddressUser(dto: UpdateAddress, userId: string) {
+    const user = await this.userRepository.findOne({ id: userId });
+    if (!user) {
+      throw new NotFoundException('User not Found');
+    }
+    const provinces = await await axios.get(
+      'https://vapi.vnappmob.com/api/province',
+    );
+    console.log('province', provinces.data.results);
+    const province = _.find(provinces.data.results, function(o) {
+      return o.province_id == dto.city;
+    });
+    if (!province) {
+      throw new BadRequestException('Invalid City');
+    }
+    // await this.profileRepository.update(
+    //   { id: user.profile.id },
+    //   {
+
+    //   }
+    // );
+    const address = await this.addressRepository.create({
+      city: dto.city,
+      description: dto.description,
+    });
+    await this.addressRepository.save(address);
+    await this.userRepository.update(
+      { id: user.id },
+      {
+        address: [{ ...address }],
+      },
+    );
+    return {
+      status: true,
+    };
+    // const address = this.addressRepository.update({
+    //   user,
+    // },
+    //   {
+    //   city: province.province_id,
+    //   description: dto.description
+    // })
   }
 }

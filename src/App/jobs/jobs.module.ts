@@ -8,6 +8,7 @@ import { Category } from 'src/entity/category.entity';
 import { Address } from 'src/entity/address.entity';
 import { JobRepository } from './jobs.repository';
 import { AppliedJob } from 'src/entity/applied_job.entity';
+import { AppliesJobRepo } from './jobApplies.repository';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AppliedJob } from 'src/entity/applied_job.entity';
       Address,
       JobRepository,
       AppliedJob,
+      AppliesJobRepo,
     ]),
   ],
   providers: [JobService],
