@@ -311,13 +311,8 @@ export class JobsController extends BaseController<Job> {
   }
 
   @Override('getOneBase')
-  @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  async getOne(
-    @ParsedRequest() req: CrudRequest,
-    @ParsedBody() dto: Job,
-    @UserSession() user,
-  ) {
+  async getOne(@ParsedRequest() req: CrudRequest) {
     try {
       const data = await this.base.getOneBase(req);
       return data;
@@ -352,8 +347,6 @@ export class JobsController extends BaseController<Job> {
       }
       return { ...job, applied: false };
     } catch (error) {
-      console.log('err', error);
-
       throw new HttpException(
         {
           message: 'Job not found',
