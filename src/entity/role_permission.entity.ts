@@ -10,7 +10,6 @@ import { IsInt } from 'class-validator';
 import { Role } from './role.entity';
 import { PermissionsEntity } from './permission.entity';
 import { posessionEnum } from '../common/enums/possession.enum';
-import { extend } from 'lodash';
 import { Base } from './base.entity';
 
 @Unique('uniquekey', ['roleId', 'permissionId', 'posession'])

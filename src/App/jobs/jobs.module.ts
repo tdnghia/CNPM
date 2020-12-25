@@ -7,10 +7,20 @@ import { User } from 'src/entity/user.entity';
 import { Category } from 'src/entity/category.entity';
 import { Address } from 'src/entity/address.entity';
 import { JobRepository } from './jobs.repository';
+import { AppliedJob } from 'src/entity/applied_job.entity';
+import { AppliesJobRepo } from './jobApplies.repository';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Job, User, Category, Address, JobRepository]),
+    TypeOrmModule.forFeature([
+      Job,
+      User,
+      Category,
+      Address,
+      JobRepository,
+      AppliedJob,
+      AppliesJobRepo,
+    ]),
   ],
   providers: [JobService],
   controllers: [JobsController],

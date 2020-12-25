@@ -36,6 +36,7 @@ import { Category } from './category.entity';
 import { EducationsEntity } from './education.entity';
 import { Job } from './job.entity';
 import { Article } from './article.entity';
+import { AppliedJob } from './applied_job.entity';
 const { CREATE, UPDATE } = CrudValidationGroups;
 
 @Entity('users')
@@ -186,9 +187,10 @@ export class User extends Base {
   /**
    * A user can apply many jobs
    */
-  @ManyToMany(
-    type => Job,
-    job => job.appliedBy,
+
+  @OneToMany(
+    type => AppliedJob,
+    appliedJob => appliedJob.user,
   )
   applied: Job[];
 

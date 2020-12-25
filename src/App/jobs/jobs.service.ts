@@ -16,19 +16,19 @@ import { UserRepository } from '../users/user.repository';
 import { CategoryRepository } from '../categories/categories.repository';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
-import * as nodemailer from 'nodemailer';
-import { UserSession } from 'src/common/decorators/user.decorator';
+import { AppliesJobRepo } from './jobApplies.repository';
 
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
   private tableName = 'job_favorite ';
-  private job_applied = 'job_applied';
+  private job_applied = 'applied_job';
   constructor(
     @InjectRepository(Job) repo,
     private readonly repository: JobRepository,
     private readonly userRepository: UserRepository,
     private readonly cateRepository: CategoryRepository,
     private readonly addressRepository: AddressRepository,
+    private readonly appliesJobRepo: AppliesJobRepo,
   ) {
     super(repo);
   }
@@ -86,7 +86,6 @@ export class JobService extends TypeOrmCrudService<Job> {
   }
 
   async appliesJob(jobId: string, userId: string) {
-    this.tableName = 'job_applied';
     const manager = getManager();
     const job = await this.repository.findOne({ where: { id: jobId } });
     const user = await this.userRepository.findOne({ where: { id: userId } });
@@ -99,48 +98,18 @@ export class JobService extends TypeOrmCrudService<Job> {
     }
     try {
       const jobApplied = await manager.query(
-        `SELECT * FROM ${this.tableName} WHERE "jobId"='${jobId}' and "userId"='${userId}'`,
+        `SELECT * FROM ${this.job_applied} WHERE "jobId"='${jobId}' and "userId"='${userId}'`,
       );
 
       if (jobApplied.length == 0) {
-        await manager.query(
-          `INSERT INTO ${this.tableName} values('${jobId}','${userId}')`,
-        );
-        const transporter = nodemailer.createTransport({
-          service: 'gmail',
-          auth: {
-            user: 'tdnghia1011@gmail.com', // generated ethereal user
-            pass: 'shidoo1011', // generated ethereal password
-          },
-        });
-
-        // send mail with defined transport object
-        const mailOptions = {
-          from: '"Fred Foo 👻" <tdnghia1011@gmail.com>', // sender address
-          to: user.email, // list of receivers
-          subject: 'Thank you for joining the App CareerNetwork!', // Subject line
-          text: 'I am so glad you registered for the CareerNetwork', // plain text body
-          html: `<b>Here's your password for login as employee</b><p>Make sure you don't share this email public</p><b>password: </b><p>Our best</p><b>Twist Team</b>`, // html body
-        };
-
-        transporter.sendMail(mailOptions, function(error, info) {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log('Email sent: ' + info.response);
-          }
-        });
+        const createJob = this.appliesJobRepo.create({ user, jobId });
+        await this.appliesJobRepo.save(createJob);
         return { status: true };
       } else {
         throw new ConflictException('Job has been already applied');
       }
     } catch (error) {
-      if (error.response.statusCode === 409) {
-        throw error;
-      }
-      throw new InternalServerErrorException(
-        `Internal Server Error Exception ${error}`,
-      );
+      throw error;
     }
   }
 
@@ -213,33 +182,59 @@ export class JobService extends TypeOrmCrudService<Job> {
     if (!contributor) {
       throw new NotFoundException('User not found');
     }
-    const allCompanyJob: any = await this.repo.find({
-      join: { alias: 'job', innerJoin: { user: 'job.user' } },
-      where: qb => {
-        qb.where('user.id = :id', { id: contributorId });
-      },
-      relations: ['appliedBy', 'appliedBy.profile'],
-    });
 
+    const allCompanyJob = await this.repository.find({
+      where: { user: contributor },
+      relations: ['appliedBy', 'appliedBy.user', 'appliedBy.user.profile'],
+    });
     return allCompanyJob.map(job => {
       if (job.appliedBy.length > 0) {
         const newJob = job.appliedBy.map(user => {
-          delete user.password;
-          delete user.role;
-          delete user.ExpiredToken;
+          delete user['jobId'];
+          delete user['userId'];
+          delete user['index_name'];
+          delete user['status'];
+          delete user['user'].password;
+          delete user['user'].role;
+          delete user['user'].ExpiredToken;
           return user;
         });
-        return { ...job, newJob };
+        return { ...job };
       }
       return job;
     });
   }
 
+  async acceptJob(userId: string, jobId: string, contriButeId: string) {
+    const user = await this.userRepository.findOne({
+      where: { id: contriButeId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const manager = getManager();
+
+    try {
+      const jobApplied = await manager.query(
+        `SELECT * FROM ${this.job_applied} WHERE "userId"='${userId}' AND "jobId"='${jobId}'`,
+      );
+      if (jobApplied.length > 0) {
+        await manager.query(
+          `UPDATE ${this.job_applied} set "status"= true WHERE "userId"='${userId}' AND "jobId"='${jobId}'`,
+        );
+        return {
+          status: true,
+        };
+      }
+    } catch (err) {
+      throw new NotFoundException(' not found');
+    }
+  }
+
   async getOneJobAppliedUser(id: string) {
     try {
-      const findJob = await this.repository.findOne(
-        { id : id },
-      );
+      const findJob = await this.repository.findOne({ id: id });
 
       if (!findJob) {
         return new NotFoundException('Job not found');
@@ -247,7 +242,7 @@ export class JobService extends TypeOrmCrudService<Job> {
 
       const manager = getManager();
       const appliedJob = await manager.query(
-        `SELECT * FROM job_applied WHERE "jobId"='${id}'`,
+        `SELECT * FROM applied_job WHERE "jobId"='${id}'`,
       );
 
       const userIds = appliedJob.map(user => user.userId);
@@ -280,25 +275,22 @@ export class JobService extends TypeOrmCrudService<Job> {
   }
 
   async updateRecently(userId: string, jobId: string) {
-    const manager = getManager();
-    const findRecently = await manager.query(
-      `SELECT * FROM job_recently where userId = '${userId}' and jobId = ${jobId}`,
-    );
-    
-    if (!findRecently) {
-      await manager.query(
-        `INSERT INTO job_recently (userId, jobId) VALUES ('${userId}', '${jobId}')`
-      )
-    }
-
-    const recentlyJobByUser = await manager.query(
-      `SELECT * FROM job_recently where userId = '${userId}' ORDER BY deletedat ASC`
-    );
-
-    if (recentlyJobByUser.length > 10) {
-      await manager.query(
-        `DELETE FROM job_recently where userId = '${recentlyJobByUser[0].userId}' and jobId = '${recentlyJobByUser[0].jobId}'`
-      );
-    }
+    // const manager = getManager();
+    // const findRecently = await manager.query(
+    //   `SELECT * FROM job_recently where userId = '${userId}' and jobId = ${jobId}`,
+    // );
+    // if (!findRecently) {
+    //   await manager.query(
+    //     `INSERT INTO job_recently (userId, jobId) VALUES ('${userId}', '${jobId}')`,
+    //   );
+    // }
+    // const recentlyJobByUser = await manager.query(
+    //   `SELECT * FROM job_recently where userId = '${userId}' ORDER BY deletedat ASC`,
+    // );
+    // if (recentlyJobByUser.length > 10) {
+    //   await manager.query(
+    //     `DELETE FROM job_recently where userId = '${recentlyJobByUser[0].userId}' and jobId = '${recentlyJobByUser[0].jobId}'`,
+    //   );
+    // }
   }
 }
