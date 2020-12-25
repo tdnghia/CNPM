@@ -339,13 +339,13 @@ export class UserController extends BaseController<User> {
         service: 'gmail',
         auth: {
           user: 'tdnghia1011@gmail.com', // generated ethereal user
-          pass: 'shidoo1011', // generated ethereal password
+          pass: 'btaaxlnkyzgdroma', // generated ethereal password
         },
       });
 
       // send mail with defined transport object
       const mailOptions = {
-        from: '"Fred Foo 👻" <tdnghia1011@gmail.com>', // sender address
+        from: '"CareerNetwork" <tdnghia1011@gmail.com>', // sender address
         to: user.email, // list of receivers
         subject: 'Thank you for joining the App CareerNetwork!', // Subject line
         text: 'I am so glad you registered for the CareerNetwork', // plain text body

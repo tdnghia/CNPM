@@ -97,6 +97,14 @@ export class AuthController {
     return await this.authService.getProfile(id);
   }
 
+  @Get('me/recently')
+  @Methods(methodEnum.READ)
+  @UseGuards(PossessionGuard)
+  async getRecently(@UserSession() user: any) {
+    const { id } = user.users;
+    return await this.authService.getRecently(id);
+  }
+
   // @Put('me')
   // @Methods(methodEnum.UPDATE)
   // async update

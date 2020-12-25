@@ -27,9 +27,11 @@ import { Payload } from 'src/types/payload';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
 import { Profile } from 'src/entity/profile.entity';
+import { Job } from 'src/entity/job.entity';
 
 @Injectable()
 export class AuthServices {
+  private job_recently = 'job_recently';
   constructor(
     private userRepository: UserRepository,
     @InjectRepository(Role)
@@ -37,6 +39,8 @@ export class AuthServices {
     private addressRepository: AddressRepository,
     @InjectRepository(Profile)
     private readonly profileRepository: Repository<Profile>,
+    @InjectRepository(Job)
+    private readonly jobRepository: Repository<Job>,
   ) {}
 
   async getRolesPermission(role: string) {
@@ -284,6 +288,22 @@ export class AuthServices {
         { phone: dto.phone },
       );
       return { success: true };
+    } catch (err) {
+      throw new InternalServerErrorException('Server Error');
+    }
+  }
+
+  async getRecently(id: string) {
+    try {
+      const manager = getManager();
+
+      const jobRecently = await manager.query(
+        `SELECT "jobId" FROM ${this.job_recently} WHERE "userId"='${id}'`,
+      );
+      const jobId = jobRecently.map(job => {return job.jobId});
+      console.log('recently', jobId);
+      // console.log('job 1', this.jobRepository.findOne({ }))
+      return await this.jobRepository.findByIds(jobId);
     } catch (err) {
       throw new InternalServerErrorException('Server Error');
     }

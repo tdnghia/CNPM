@@ -31,11 +31,14 @@ import { ModuleEnum } from 'src/common/enums/module.enum';
 import { Job } from 'src/entity/job.entity';
 import { JwtAuthGuard } from 'src/guards/jwt-auth.guard';
 import { ValidationPipe } from 'src/shared/validation.pipe';
-import { getManager, IsNull, Not } from 'typeorm';
+import { getManager, IsNull, Not, Repository } from 'typeorm';
 import { JobRepository } from './jobs.repository';
 import { JobService } from './jobs.service';
 import * as _ from 'lodash';
 import { JobDTO } from './job.dto';
+import * as nodemailer from 'nodemailer';
+import { User } from 'src/entity/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @Crud({
   model: {
@@ -92,6 +95,8 @@ export class JobsController extends BaseController<Job> {
   constructor(
     public service: JobService,
     private readonly repository: JobRepository,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {
     super(repository);
   }
@@ -233,7 +238,36 @@ export class JobsController extends BaseController<Job> {
     @UserSession() user: any,
   ) {
     try {
-      return await this.service.acceptJob(jobDTO.userId, id, user.users.id);
+      // console.log('jere');
+      // return;
+      const job = await this.repository.findOne({id: id});
+      const acceptedUser = await this.userRepository.findOne({ id: jobDTO.userId});
+      // return acceptedUser;
+      await this.service.acceptJob(jobDTO.userId, id, user.users.id);
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+          user: 'tdnghia1011@gmail.com', // generated ethereal user
+          pass: 'btaaxlnkyzgdroma', // generated ethereal password
+        },
+      });
+
+      // send mail with defined transport object
+      const mailOptions = {
+        from: '"Career Network" <tdnghia1011@gmail.com>', // sender address
+        to: acceptedUser.email, // list of receivers
+        subject: 'Your CV has been reviewed and accepted by the recruitment', // Subject line
+        text: `Congratulation, your CV has been accepted by the recruitment for ${job.name}. Contact them to get more details!`, // plain text body
+        // html: `<a>Here's your password for login as employee</b><p>Make sure you don't share this email public</p><b>password: ${generatePassword}</b><p>Our best</p><b>Twist Team</b>`, // html body
+      };
+
+      transporter.sendMail(mailOptions, function(error, info) {
+        if (error) {
+          console.log(error);
+        } else {
+          console.log('Email sent: ' + info.response);
+        }
+      });
     } catch (err) {
       return {
         status: false,

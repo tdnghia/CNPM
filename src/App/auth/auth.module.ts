@@ -11,6 +11,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { Address } from 'src/entity/address.entity';
 import { ProfileSkill } from 'src/entity/ProfileSkill.entity';
 import { Profile } from 'src/entity/profile.entity';
+import { Job } from 'src/entity/job.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -20,6 +21,7 @@ import { Profile } from 'src/entity/profile.entity';
       Address,
       ProfileSkill,
       Profile,
+      Job,
     ]),
     PassportModule,
     JwtModule.register({
