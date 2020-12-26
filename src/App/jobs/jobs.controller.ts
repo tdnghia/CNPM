@@ -504,4 +504,16 @@ export class JobsController extends BaseController<Job> {
     const userId = user.users.id;
     return this.service.appliesJob(id, userId);
   }
+  
+  @Get('accept/all/user')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getAllAcceptedUser(@UserSession() user) {
+    return this.service.getAllAcceptedUser(user.users.id);
+  }
+
+  @Get('accept/:id/user')
+  async getAllgetAcceptedUserByJobIdAcceptJob(@Param('id') id: string) {
+    return this.service.getAcceptedUserByJobId(id);
+  }
 }
