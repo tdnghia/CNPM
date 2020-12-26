@@ -180,7 +180,7 @@ export class Job extends Base {
     type => AppliedJob,
     appliedJob => appliedJob.job,
   )
-  appliedBy: AppliedJob[];
+  appliedBy: User[];
 
   /**
    * Recently Job
