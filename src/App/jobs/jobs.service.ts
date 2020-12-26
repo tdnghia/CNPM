@@ -194,7 +194,7 @@ export class JobService extends TypeOrmCrudService<Job> {
           delete user['jobId'];
           delete user['userId'];
           delete user['index_name'];
-          delete user['status'];
+          // delete user['status'];
           delete user['user'].password;
           delete user['user'].role;
           delete user['user'].ExpiredToken;
@@ -248,13 +248,26 @@ export class JobService extends TypeOrmCrudService<Job> {
 
       const userIds = appliedJob.map(user => user.userId);
       const users = await this.userRepository.findByIds(userIds, {
-        relations: ['profile'],
+        relations: ['profile', 'applied'],
       });
+      // console.log('user', users);
       return users.map(user => {
         delete user.password;
         delete user.ExpiredToken;
         delete user.ExpiredToken;
-        return user;
+
+        return {
+          ...user,
+          applied: user.applied.filter(appliedJob => {
+            delete appliedJob['userId'];
+            delete appliedJob['createdat'];
+            delete appliedJob['updatedat'];
+            delete appliedJob['index_name'];
+            delete appliedJob['deletedat'];
+
+            return appliedJob['jobId'] == id;
+          }),
+        };
       });
     } catch (error) {
       console.log(error);
@@ -298,10 +311,10 @@ export class JobService extends TypeOrmCrudService<Job> {
 
   async getAllAcceptedUser(id: string) {
     try {
-      const contributor = this.userRepository.findOne({id: id});
+      const contributor = this.userRepository.findOne({ id: id });
       const allCompanyJob = await this.repository.find({
-        where: {user: contributor},
-        relations: ['appliedBy', 'appliedBy.user', 'appliedBy.user.profile']
+        where: { user: contributor },
+        relations: ['appliedBy', 'appliedBy.user', 'appliedBy.user.profile'],
       });
       // return allCompanyJob.map(job => {
       //   return job.appliedBy.filter(applied => {
@@ -309,8 +322,7 @@ export class JobService extends TypeOrmCrudService<Job> {
       //   })
       //   return job;
       // });
-
-    } catch(err) {
+    } catch (err) {
       throw new InternalServerErrorException('Internal Server Error');
     }
   }
@@ -325,9 +337,13 @@ export class JobService extends TypeOrmCrudService<Job> {
         return user.userId;
       });
       return await this.userRepository.findByIds(userIds, {
-        relations: ['profile', 'profile.profileSkill', 'profile.educationProfile']
+        relations: [
+          'profile',
+          'profile.profileSkill',
+          'profile.educationProfile',
+        ],
       });
-    } catch(err) {
+    } catch (err) {
       throw new InternalServerErrorException('Internal Server Error');
     }
   }
