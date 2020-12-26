@@ -275,17 +275,18 @@ export class JobService extends TypeOrmCrudService<Job> {
   }
 
   async updateRecently(userId: string, jobId: string) {
-    // const manager = getManager();
-    // const findRecently = await manager.query(
-    //   `SELECT * FROM job_recently where userId = '${userId}' and jobId = ${jobId}`,
-    // );
-    // if (!findRecently) {
-    //   await manager.query(
-    //     `INSERT INTO job_recently (userId, jobId) VALUES ('${userId}', '${jobId}')`,
-    //   );
-    // }
+    const manager = getManager();
+    const findRecently = await manager.query(
+      `SELECT * FROM job_recently where "userId" = '${userId}' and "jobId" = '${jobId}'`,
+    );
+
+    if (findRecently.length == 0) {
+      await manager.query(
+        `INSERT INTO job_recently VALUES ('${jobId}', '${userId}')`,
+      );
+    }
     // const recentlyJobByUser = await manager.query(
-    //   `SELECT * FROM job_recently where userId = '${userId}' ORDER BY deletedat ASC`,
+    //   `SELECT * FROM job_recently where "userId" = '${userId}'`,
     // );
     // if (recentlyJobByUser.length > 10) {
     //   await manager.query(

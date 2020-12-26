@@ -305,9 +305,15 @@ export class AuthServices {
       const jobId = jobRecently.map(job => {
         return job.jobId;
       });
-      console.log('recently', jobId);
       // console.log('job 1', this.jobRepository.findOne({ }))
-      return await this.jobRepository.findByIds(jobId);
+      const jobs = await this.jobRepository.findByIds(jobId, {
+        where: {},
+        relations: ['user', 'user.profile', 'categories', 'address'],
+      });
+      return jobs.map(job => {
+        delete job.user.password;
+        return job;
+      });
     } catch (err) {
       throw new InternalServerErrorException('Server Error');
     }
