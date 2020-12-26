@@ -17,6 +17,7 @@ import { CategoryRepository } from '../categories/categories.repository';
 import axios from 'axios';
 import { AddressRepository } from '../address/address.repository';
 import { AppliesJobRepo } from './jobApplies.repository';
+import * as _ from 'lodash';
 
 @Injectable()
 export class JobService extends TypeOrmCrudService<Job> {
@@ -275,22 +276,59 @@ export class JobService extends TypeOrmCrudService<Job> {
   }
 
   async updateRecently(userId: string, jobId: string) {
-    // const manager = getManager();
-    // const findRecently = await manager.query(
-    //   `SELECT * FROM job_recently where userId = '${userId}' and jobId = ${jobId}`,
-    // );
-    // if (!findRecently) {
-    //   await manager.query(
-    //     `INSERT INTO job_recently (userId, jobId) VALUES ('${userId}', '${jobId}')`,
-    //   );
-    // }
+    const manager = getManager();
+    const findRecently = await manager.query(
+      `SELECT * FROM job_recently where "userId" = '${userId}' and "jobId" = '${jobId}'`,
+    );
+
+    if (findRecently.length == 0) {
+      await manager.query(
+        `INSERT INTO job_recently VALUES ('${jobId}', '${userId}')`,
+      );
+    }
     // const recentlyJobByUser = await manager.query(
-    //   `SELECT * FROM job_recently where userId = '${userId}' ORDER BY deletedat ASC`,
+    //   `SELECT * FROM job_recently where "userId" = '${userId}'`,
     // );
     // if (recentlyJobByUser.length > 10) {
     //   await manager.query(
     //     `DELETE FROM job_recently where userId = '${recentlyJobByUser[0].userId}' and jobId = '${recentlyJobByUser[0].jobId}'`,
     //   );
     // }
+  }
+
+  async getAllAcceptedUser(id: string) {
+    try {
+      const contributor = this.userRepository.findOne({id: id});
+      const allCompanyJob = await this.repository.find({
+        where: {user: contributor},
+        relations: ['appliedBy', 'appliedBy.user', 'appliedBy.user.profile']
+      });
+      // return allCompanyJob.map(job => {
+      //   return job.appliedBy.filter(applied => {
+      //     return applied.status == true;
+      //   })
+      //   return job;
+      // });
+
+    } catch(err) {
+      throw new InternalServerErrorException('Internal Server Error');
+    }
+  }
+
+  async getAcceptedUserByJobId(id: string) {
+    try {
+      const manager = getManager();
+      const acceptedUser = await manager.query(
+        `SELECT "userId" FROM applied_job WHERE "jobId" = '${id}' and "status" = true`,
+      );
+      const userIds = acceptedUser.map(user => {
+        return user.userId;
+      });
+      return await this.userRepository.findByIds(userIds, {
+        relations: ['profile', 'profile.profileSkill', 'profile.educationProfile']
+      });
+    } catch(err) {
+      throw new InternalServerErrorException('Internal Server Error');
+    }
   }
 }
