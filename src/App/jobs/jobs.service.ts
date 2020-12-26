@@ -248,12 +248,21 @@ export class JobService extends TypeOrmCrudService<Job> {
 
       const userIds = appliedJob.map(user => user.userId);
       const users = await this.userRepository.findByIds(userIds, {
-        relations: ['profile'],
+        relations: ['profile', 'applied'],
       });
+      // console.log('user', users);
       return users.map(user => {
+        // for (let i = 0; i < user.applied.length; i++) {
+        //   if (user.applied[i]['jobId'] != id) {
+        //     delete user.applied[i];
+        //   }
+        // }
         delete user.password;
         delete user.ExpiredToken;
         delete user.ExpiredToken;
+        // console.log(newUser);
+        // return { ...user };
+        
         return user;
       });
     } catch (error) {
