@@ -252,19 +252,20 @@ export class JobService extends TypeOrmCrudService<Job> {
       });
       // console.log('user', users);
       return users.map(user => {
-        // for (let i = 0; i < user.applied.length; i++) {
-        //   if (user.applied[i]['jobId'] != id) {
-        //     delete user.applied[i];
-        //   }
-        // }
         delete user.password;
         delete user.ExpiredToken;
         delete user.ExpiredToken;
-        // console.log(newUser);
-        // return { ...user };
         
-        return user;
-      });
+        return {...user, applied: user.applied.filter((appliedJob) =>  {
+          delete appliedJob['userId'];
+          delete appliedJob['createdat'];
+          delete appliedJob['updatedat'];
+          delete appliedJob['index_name'];
+          delete appliedJob['deletedat'];
+
+          return appliedJob['jobId'] == id
+        })}
+      })
     } catch (error) {
       console.log(error);
       throw new HttpException(
