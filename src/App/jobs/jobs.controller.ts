@@ -104,9 +104,13 @@ export class JobsController extends BaseController<Job> {
   }
 
   @Override('createOneBase')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @Methods(methodEnum.CREATE)
   @UsePipes(new ValidationPipe())
-  async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job) {
+  async createOne(@ParsedRequest() req: CrudRequest, @ParsedBody() dto: Job, @UserSession() user) {
+    const currentUser = await this.userRepository.findOne({ id: user.users.id });
+    dto.user = currentUser;
     return this.service.createJob(dto);
   }
 
@@ -216,7 +220,7 @@ export class JobsController extends BaseController<Job> {
     const sort = req.query.hasOwnProperty('sort') ? req.query.sort : null;
 
     try {
-      return await this.repository.paginate(
+      return this.repository.paginate(
         {
           limit,
           page,
