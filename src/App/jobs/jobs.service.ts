@@ -195,8 +195,6 @@ export class JobService extends TypeOrmCrudService<Job> {
           delete user['userId'];
           delete user['index_name'];
           // delete user['status'];
-          // test commit
-          // abc
           delete user['user'].password;
           delete user['user'].role;
           delete user['user'].ExpiredToken;
